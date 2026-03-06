@@ -1,0 +1,129 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 5%;
+  background: rgba(18, 18, 18, 0.95);
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 900;
+  font-size: 1.5rem;
+  color: #fff;
+}
+
+.nav-logo img {
+  height: 40px;
+}
+
+.nav-links {
+  display: flex;
+  list-style: none;
+  gap: 2rem;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: var(--text-muted);
+  font-weight: 600;
+  transition: color 0.3s;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+}
+
+.nav-links a:hover {
+  color: var(--primary-orange);
+}
+
+.nav-auth {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.lang-toggle {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--primary-orange);
+  color: var(--primary-orange);
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.8rem;
+  transition: all 0.3s;
+}
+
+.lang-toggle:hover {
+  background: var(--primary-orange);
+  color: #000;
+}
+
+.login-btn {
+  background: transparent;
+  border: 1px solid var(--text-muted);
+  color: #fff;
+  padding: 8px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.login-btn:hover {
+  border-color: #fff;
+}
+
+.join-btn {
+  padding: 8px 25px !important;
+}
+
+/* User Actions */
+.user-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem; /* More spacing between name and button */
+  margin-left: 1rem;
+}
+
+.user-name {
+  color: var(--primary-orange);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.05rem;
+  text-transform: uppercase;
+  text-shadow: 0 0 10px rgba(255, 174, 0, 0.3);
+}
+
+.logout-btn {
+  background: rgba(255, 77, 77, 0.05);
+  border: 1px solid rgba(255, 77, 77, 0.3);
+  color: #ff4d4d;
+  padding: 8px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03rem;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.logout-btn:hover {
+  background: #ff4d4d;
+  color: #fff;
+  border-color: #ff4d4d;
+  box-shadow: 0 0 15px rgba(255, 77, 77, 0.4);
+  transform: translateY(-2px);
+}
+
+.logout-btn:active {
+  transform: scale(0.95);
+}

@@ -1,0 +1,125 @@
+.shop-container {
+  padding: 4rem 0;
+}
+
+.donations-banner {
+  background: linear-gradient(135deg, #1c1f20 0%, #0f1111 100%);
+  padding: 4rem;
+  border-radius: 20px;
+  border: 1px solid var(--primary-orange);
+  text-align: center;
+  margin-bottom: 4rem;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+
+.donation-options {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  margin: 3rem 0;
+  flex-wrap: wrap;
+}
+
+.custom-amount {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 30px;
+  width: 150px;
+}
+
+.payment-methods {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2rem;
+  color: var(--text-muted);
+}
+
+.method-badge {
+  background: #fff;
+  color: #000;
+  font-weight: 900;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+.raffle-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.raffle-card {
+  background: var(--bg-card);
+  border-radius: 15px;
+  overflow: hidden;
+  display: flex;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.raffle-visual {
+  width: 30%;
+  background: #151718;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.raffle-info {
+  padding: 2rem;
+  flex: 1;
+}
+
+.raffle-numbers {
+  margin: 1.5rem 0;
+  font-family: monospace;
+  color: var(--secondary-yellow);
+}
+
+.membership-section {
+  margin-top: 5rem;
+  text-align: center;
+}
+
+.premium-card {
+  max-width: 400px;
+  margin: 3rem auto;
+  background: linear-gradient(#1c1f20, #0f1111);
+  border: 1px solid var(--secondary-yellow);
+  padding: 3rem;
+  border-radius: 20px;
+  text-align: left;
+}
+
+.premium-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid rgba(224, 255, 0, 0.2);
+  padding-bottom: 1rem;
+}
+
+.premium-card ul {
+  list-style: none;
+  margin: 2rem 0;
+}
+
+.premium-card li {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.premium-card li::before {
+  content: '⚡';
+  color: var(--secondary-yellow);
+}

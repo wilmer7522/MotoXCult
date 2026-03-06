@@ -1,0 +1,114 @@
+.home-page {
+  width: 100%;
+}
+
+.hero {
+  position: relative;
+  height: 90vh;
+  background-image: url('/assets/Home.png');
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    rgba(15, 17, 17, 0.4) 0%,
+    rgba(15, 17, 17, 0.95) 100%
+  );
+  z-index: 1;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  width: 100%;
+  max-width: 1000px;
+  padding: 0 20px;
+}
+
+.hero-content h1 {
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  line-height: 1;
+  margin-bottom: 2rem;
+  text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.neon-text {
+  text-shadow: 0 0 20px rgba(255, 140, 0, 0.6);
+}
+
+.hero-btn {
+  font-size: 1.2rem;
+  padding: 18px 50px !important;
+  box-shadow: 0 0 30px rgba(255, 140, 0, 0.4);
+}
+
+.content-wrap {
+  background-color: var(--bg-dark);
+  padding-bottom: 5rem;
+}
+
+.section-title {
+  margin: 4rem 0 2rem;
+  font-size: 2rem;
+  border-left: 5px solid var(--primary-orange);
+  padding-left: 1rem;
+}
+
+.ride-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+}
+
+.ride-card {
+  background: var(--bg-card);
+  height: 250px;
+  border-radius: 15px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  padding: 2rem;
+  transition: transform 0.3s, box-shadow 0.3s;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+}
+
+.ride-card:hover {
+  transform: translateY(-10px);
+  border-color: var(--primary-orange);
+}
+
+.dark-accent {
+  background-color: #161819;
+  padding: 4rem 0;
+  margin-top: 4rem;
+}
+
+.forum-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.forum-item {
+  background: var(--bg-dark);
+  padding: 2rem;
+  border-radius: 12px;
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}

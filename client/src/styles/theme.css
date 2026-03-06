@@ -1,0 +1,83 @@
+:root {
+  /* Colors - Based on "Modern Biker Digital" aesthetic */
+  --bg-dark: #0f1111;
+  --bg-card: #1c1f20;
+  --primary-orange: #ff8c00;
+  --secondary-yellow: #e0ff00;
+  --text-main: #ffffff;
+  --text-muted: #a0a0a0;
+  --accent-gradient: linear-gradient(135deg, var(--primary-orange), var(--secondary-yellow));
+  
+  /* Typography */
+  --font-main: 'Inter', sans-serif;
+  
+  /* Spacing */
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 32px;
+  --border-radius: 12px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font-family: var(--font-main);
+  line-height: 1.6;
+  overflow-x: hidden;
+  width: 100%;
+}
+
+/* Centralized Layout Container */
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 5%;
+  width: 100%;
+}
+
+.full-bleed {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+}
+
+main {
+  width: 100%;
+  min-height: calc(100vh - 80px);
+}
+
+h1, h2, h3, h4 {
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+button.cta {
+  background: var(--accent-gradient);
+  border: none;
+  padding: 12px 24px;
+  color: #000;
+  font-weight: bold;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button.cta:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(255, 140, 0, 0.5);
+}

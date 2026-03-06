@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String?
+  nickname  String?
+  bio       String?
+  location  String?
+  avatar    String?
+  karma     Int      @default(0)
+  role      String   @default("USER")
+  createdAt DateTime @default(now())
+  bikes     Bike[]
+  events    Event[]  @relation("EventOrganizer")
+  photos    Photo[]
+  posts     Post[]
+  tickets   Ticket[]
+  attended  Event[]  @relation("EventAttendees")
+}
+
+model Bike {
+  id     Int     @id @default(autoincrement())
+  brand  String
+  model  String
+  year   Int
+  photo  String?
+  userId Int
+  user   User    @relation(fields: [userId], references: [id])
+}
+
+model Event {
+  id          Int      @id @default(autoincrement())
+  title       String
+  date        DateTime
+  type        String
+  difficulty  String
+  distance    Int
+  isOfficial  Boolean  @default(false)
+  isExclusive Boolean  @default(false)
+  organizerId Int
+  createdAt   DateTime @default(now())
+  organizer   User     @relation("EventOrganizer", fields: [organizerId], references: [id])
+  photos      Photo[]
+  attendees   User[]   @relation("EventAttendees")
+}
+
+model Photo {
+  id      Int    @id @default(autoincrement())
+  url     String
+  eventId Int
+  userId  Int
+  event   Event  @relation(fields: [eventId], references: [id])
+  user    User   @relation(fields: [userId], references: [id])
+}
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String
+  category  String
+  userId    Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Giveaway {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  itemImage   String?
+  ticketPrice Float
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  tickets     Ticket[]
+}
+
+model Ticket {
+  id         Int      @id @default(autoincrement())
+  number     Int
+  status     String   @default("SOLD")
+  userId     Int
+  giveawayId Int
+  giveaway   Giveaway @relation(fields: [giveawayId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+}

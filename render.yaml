@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: motoxcult-api
+    env: node
+    plan: free
+    buildCommand: npm install && prisma generate
+    startCommand: node index.js
+    envVars:
+      - key: NODE_VERSION
+        value: 18.20.8
+      - key: DATABASE_URL
+        fromDatabase:
+          name: motoxcult-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: PORT
+        value: 5001
+
+databases:
+  - name: motoxcult-db
+    plan: free
