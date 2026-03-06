@@ -3,6 +3,7 @@ services:
     name: motoxcult-api
     env: node
     plan: free
+    rootDir: server
     buildCommand: npm install && prisma generate
     startCommand: node index.js
     envVars:
