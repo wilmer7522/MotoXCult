@@ -42,6 +42,15 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Moto-X Cult API is running' });
 });
 
+// Global Error Handler to avoid returning HTML
+app.use((err, req, res, next) => {
+  console.error('Unhandled Server Error:', err);
+  res.status(err.http_code || 500).json({ 
+    message: err.message || 'Internal Server Error',
+    error: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
