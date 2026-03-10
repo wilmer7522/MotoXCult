@@ -53,6 +53,23 @@ const Garage = () => {
     }
   };
 
+  const handleDeleteBike = async (bikeId) => {
+    if (!window.confirm('¿Seguro que deseas eliminar esta moto de tu garaje?')) return;
+    try {
+      const res = await fetch(`${API_URL}/api/users/bikes/${bikeId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (res.ok) {
+        fetchProfile();
+      }
+    } catch (err) {
+      console.error('Error deleting bike:', err);
+    }
+  };
+
   const [uploadingBikeId, setUploadingBikeId] = useState(null);
 
   const handlePhotoUpload = async (e, bikeId) => {
@@ -183,7 +200,14 @@ const Garage = () => {
                     >
                       {uploadingBikeId === bike.id ? 'Subiendo...' : 'Añadir Foto'}
                     </button>
-                    <button className="secondary-btn">{t.home.viewDetails}</button>
+                    <button className="secondary-btn" onClick={() => alert('Pronto añadiremos reportes de mantenimientos y eventos de tu moto.')}>{t.home.viewDetails}</button>
+                    <button 
+                      className="secondary-btn" 
+                      style={{ color: '#ff4444', borderColor: '#ff4444' }}
+                      onClick={() => handleDeleteBike(bike.id)}
+                    >
+                      Borrar
+                    </button>
                   </div>
                 </div>
               </div>
