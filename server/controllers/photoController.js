@@ -21,9 +21,13 @@ exports.uploadPhoto = async (req, res) => {
       return res.status(403).json({ message: 'Limit reached: Max 10 photos per item' });
     }
 
+    if (!req.file || !req.file.path) {
+      return res.status(400).json({ message: 'No image file provided' });
+    }
+
     const photo = await prisma.photo.create({
       data: {
-        url: req.body.url || 'https://via.placeholder.com/1200x800',
+        url: req.file.path,
         userId,
         eventId: eventId ? parseInt(eventId) : null,
         bikeId: bikeId ? parseInt(bikeId) : null

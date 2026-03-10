@@ -53,6 +53,41 @@ const Garage = () => {
     }
   };
 
+  const [uploadingBikeId, setUploadingBikeId] = useState(null);
+
+  const handlePhotoUpload = async (e, bikeId) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingBikeId(bikeId);
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('bikeId', bikeId);
+
+    try {
+      const res = await fetch(`${API_URL}/api/users/photos`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          // Don't set Content-Type here, browser sets it automatically with boundary for FormData
+        },
+        body: formData
+      });
+      
+      if (res.ok) {
+        fetchProfile(); // Refresh the data to show the new photo
+      } else {
+        const errorData = await res.json();
+        alert(`Error: ${errorData.message}`);
+      }
+    } catch (err) {
+      console.error('Error uploading photo:', err);
+      alert('Error de conexión al subir la foto.');
+    } finally {
+      setUploadingBikeId(null);
+    }
+  };
+
   if (loading) return <div className="loading">Cargando Garaje...</div>;
   if (!profile) return <div className="error">No se pudo cargar el perfil.</div>;
 
@@ -123,7 +158,7 @@ const Garage = () => {
             {profile.bikes?.map(bike => (
               <div key={bike.id} className="bike-card">
                 <div className="bike-image">
-                  <img src={bike.photo || '/assets/bmw_r1250gs.png'} alt={bike.model} />
+                  <img src={bike.photo || (bike.photos?.length > 0 ? bike.photos[0].url : '/assets/bmw_r1250gs.png')} alt={bike.model} />
                   <span className="bike-number">{bike.id}</span>
                 </div>
                 <div className="bike-info">
@@ -133,7 +168,23 @@ const Garage = () => {
                     <span>📅 {bike.year}</span>
                     <span>📷 {bike.photos?.length || 0} / 10 fotos</span>
                   </div>
-                  <button className="secondary-btn">{t.home.viewDetails}</button>
+                  <div className="bike-actions">
+                    <input 
+                      type="file" 
+                      id={`photo-upload-${bike.id}`} 
+                      style={{ display: 'none' }}
+                      accept="image/*"
+                      onChange={(e) => handlePhotoUpload(e, bike.id)}
+                    />
+                    <button 
+                      className="secondary-btn" 
+                      onClick={() => document.getElementById(`photo-upload-${bike.id}`).click()}
+                      disabled={bike.photos?.length >= 10 || uploadingBikeId === bike.id}
+                    >
+                      {uploadingBikeId === bike.id ? 'Subiendo...' : 'Añadir Foto'}
+                    </button>
+                    <button className="secondary-btn">{t.home.viewDetails}</button>
+                  </div>
                 </div>
               </div>
             ))}
