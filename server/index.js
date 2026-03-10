@@ -14,7 +14,8 @@ const allowedOrigins = [
   'http://localhost:5173',
   'https://moto-x-cult.pages.dev',
   'https://main.moto-x-cult.pages.dev',
-  'https://be871260.moto-x-cult.pages.dev'
+  'https://be871260.moto-x-cult.pages.dev',
+  'https://motoxcult.pages.dev'
 ];
 
 app.use(cors({
