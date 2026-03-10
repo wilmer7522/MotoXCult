@@ -31,7 +31,8 @@ model Bike {
   id     Int     @id @default(autoincrement())
   brand  String
   model  String
-  year   Int
+  year      Int
+  nickname  String?
   photo  String?
   photos Photo[]
   userId Int
