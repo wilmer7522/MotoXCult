@@ -33,6 +33,7 @@ model Bike {
   model  String
   year   Int
   photo  String?
+  photos Photo[]
   userId Int
   user   User    @relation(fields: [userId], references: [id])
 }
@@ -56,9 +57,11 @@ model Event {
 model Photo {
   id      Int    @id @default(autoincrement())
   url     String
-  eventId Int
+  eventId Int?
+  bikeId  Int?
   userId  Int
-  event   Event  @relation(fields: [eventId], references: [id])
+  event   Event? @relation(fields: [eventId], references: [id])
+  bike    Bike?  @relation(fields: [bikeId], references: [id])
   user    User   @relation(fields: [userId], references: [id])
 }
 

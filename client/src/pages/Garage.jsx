@@ -1,21 +1,60 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { API_URL } from '../config';
 import './Garage.css';
 
 const Garage = () => {
   const { t } = useLanguage();
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newBike, setNewBike] = useState({ brand: '', model: '', year: '', nickname: '' });
 
-  const user = {
-    name: 'Carlos R.',
-    location: 'Medellín, Colombia',
-    karma: 450,
-    avatar: 'https://i.pravatar.cc/150?u=carlos'
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/users/me`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setProfile(data);
+      }
+    } catch (err) {
+      console.error('Error fetching profile:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const bikes = [
-    { id: 1, brand: 'BMW', model: 'R1250GS', nickname: 'La Aventurera', year: 2023, specs: '28 m • 30 km', image: '/assets/bmw_r1250gs.png' },
-    { id: 2, brand: 'Harley Davidson', model: 'Iron 883', nickname: 'La Urbana', year: 2018, specs: '21 m • 10 km', image: '/assets/harley_883.png' }
-  ];
+  const handleAddBike = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`${API_URL}/api/users/bikes`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(newBike)
+      });
+      if (res.ok) {
+        setShowAddForm(false);
+        setNewBike({ brand: '', model: '', year: '', nickname: '' });
+        fetchProfile();
+      }
+    } catch (err) {
+      console.error('Error adding bike:', err);
+    }
+  };
+
+  if (loading) return <div className="loading">Cargando Garaje...</div>;
+  if (!profile) return <div className="error">No se pudo cargar el perfil.</div>;
 
   return (
     <div className="garage-page full-bleed">
@@ -24,11 +63,11 @@ const Garage = () => {
         <aside className="profile-sidebar">
           <div className="profile-card">
             <div className="avatar-wrapper">
-              <img src={user.avatar} alt={user.name} />
+              <img src={profile.avatar || `https://i.pravatar.cc/150?u=${profile.email}`} alt={profile.name} />
             </div>
-            <h2>{user.name}</h2>
-            <p className="location">{user.location}</p>
-            <div className="karma-badge">{t.garage.karma}: {user.karma}</div>
+            <h2>{profile.name}</h2>
+            <p className="location">{profile.location || 'Ubicación no definida'}</p>
+            <div className="karma-badge">{t.garage.karma}: {profile.karma}</div>
           </div>
           <nav className="profile-nav">
             <button className="active">{t.garage.myGarage}</button>
@@ -41,26 +80,66 @@ const Garage = () => {
         <main className="garage-main">
           <header className="garage-header">
             <h1>{t.garage.title}</h1>
-            <button className="cta">{t.garage.addBike}</button>
+            <button className="cta" onClick={() => setShowAddForm(!showAddForm)}>
+              {showAddForm ? 'Cancelar' : t.garage.addBike}
+            </button>
           </header>
+
+          {showAddForm && (
+            <form className="add-bike-form" onSubmit={handleAddBike}>
+              <div className="form-row">
+                <input 
+                  placeholder="Marca" 
+                  value={newBike.brand} 
+                  onChange={e => setNewBike({...newBike, brand: e.target.value})} 
+                  required 
+                />
+                <input 
+                  placeholder="Modelo" 
+                  value={newBike.model} 
+                  onChange={e => setNewBike({...newBike, model: e.target.value})} 
+                  required 
+                />
+              </div>
+              <div className="form-row">
+                <input 
+                  type="number" 
+                  placeholder="Año" 
+                  value={newBike.year} 
+                  onChange={e => setNewBike({...newBike, year: e.target.value})} 
+                  required 
+                />
+                <input 
+                  placeholder="Apodo (Opcional)" 
+                  value={newBike.nickname} 
+                  onChange={e => setNewBike({...newBike, nickname: e.target.value})} 
+                />
+              </div>
+              <button type="submit" className="cta">Guardar Moto</button>
+            </form>
+          )}
+
           <div className="bike-grid">
-            {bikes.map(bike => (
+            {profile.bikes?.map(bike => (
               <div key={bike.id} className="bike-card">
                 <div className="bike-image">
-                  <img src={bike.image} alt={bike.model} />
+                  <img src={bike.photo || '/assets/bmw_r1250gs.png'} alt={bike.model} />
                   <span className="bike-number">{bike.id}</span>
                 </div>
                 <div className="bike-info">
                   <h3>{bike.brand} {bike.model}</h3>
-                  <p className="nickname">{bike.nickname}</p>
+                  <p className="nickname">{bike.nickname || 'Sin apodo'}</p>
                   <div className="bike-meta">
                     <span>📅 {bike.year}</span>
-                    <span>🔧 {bike.specs}</span>
+                    <span>📷 {bike.photos?.length || 0} / 10 fotos</span>
                   </div>
                   <button className="secondary-btn">{t.home.viewDetails}</button>
                 </div>
               </div>
             ))}
+            {profile.bikes?.length === 0 && !showAddForm && (
+              <p className="empty-msg">Aún no tienes motos en tu garaje. ¡Añade la primera!</p>
+            )}
           </div>
         </main>
       </div>
@@ -70,3 +149,4 @@ const Garage = () => {
 };
 
 export default Garage;
+
