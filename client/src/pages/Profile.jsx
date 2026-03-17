@@ -19,7 +19,8 @@ const Profile = () => {
     countryCode: ''
   });
   const [cities, setCities] = useState([]);
-  const allCountries = Country.getAllCountries().filter(c => c.region === 'Americas');
+  const americanCodes = ['AR', 'BO', 'BR', 'CA', 'CL', 'CO', 'CR', 'CU', 'DO', 'EC', 'SV', 'GT', 'HN', 'MX', 'NI', 'PA', 'PY', 'PE', 'PR', 'UY', 'VE', 'US', 'JM', 'HT', 'TT'];
+  const allCountries = Country.getAllCountries().filter(c => americanCodes.includes(c.isoCode));
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState({ type: '', text: '' });
 
