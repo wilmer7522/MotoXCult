@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const prisma = new PrismaClient();
 
 exports.register = async (req, res) => {
-  const { email, password, name } = req.body;
+  const { email, password, name, birthDate, country, city, phone, club } = req.body;
   try {
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
@@ -16,7 +16,12 @@ exports.register = async (req, res) => {
       data: {
         email,
         password: hashedPassword,
-        name: name || email.split('@')[0]
+        name: name || email.split('@')[0],
+        birthDate: birthDate ? new Date(birthDate) : null,
+        country,
+        city,
+        phone,
+        club: club ? club.toUpperCase() : null
       }
     });
 

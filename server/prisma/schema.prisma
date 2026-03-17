@@ -15,6 +15,11 @@ model User {
   nickname  String?
   bio       String?
   location  String?
+  birthDate DateTime?
+  country   String?
+  city      String?
+  phone     String?
+  club      String?
   avatar    String?
   karma     Int      @default(0)
   role      String   @default("USER")
@@ -28,15 +33,15 @@ model User {
 }
 
 model Bike {
-  id     Int     @id @default(autoincrement())
-  brand  String
-  model  String
-  year      Int
-  nickname  String?
-  photo  String?
-  photos Photo[]
-  userId Int
-  user   User    @relation(fields: [userId], references: [id])
+  id       Int     @id @default(autoincrement())
+  brand    String
+  model    String
+  year     Int
+  nickname String?
+  photo    String?
+  photos   Photo[]
+  userId   Int
+  user     User    @relation(fields: [userId], references: [id])
 }
 
 model Event {
