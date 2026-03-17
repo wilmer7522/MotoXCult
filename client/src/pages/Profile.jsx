@@ -24,9 +24,16 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState({ type: '', text: '' });
 
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({...formData});
+
   useEffect(() => {
     fetchUserData();
   }, []);
+
+  useEffect(() => {
+    setEditData({...formData});
+  }, [formData]);
 
   const fetchUserData = async () => {
     try {
@@ -38,12 +45,10 @@ const Profile = () => {
       });
       const data = await res.json();
       if (res.ok) {
-        // Formatear fecha para el input date (YYYY-MM-DD)
         const formattedDate = data.birthDate ? new Date(data.birthDate).toISOString().split('T')[0] : '';
-        
         const countryCode = allCountries.find(c => c.name === data.country)?.isoCode || '';
         
-        setFormData({
+        const newData = {
           name: data.name || '',
           email: data.email || '',
           phone: data.phone || '',
@@ -52,13 +57,13 @@ const Profile = () => {
           countryCode: countryCode,
           city: data.city || '',
           club: data.club || ''
-        });
+        };
+        setFormData(newData);
 
         if (countryCode) {
           setCities(City.getCitiesOfCountry(countryCode));
         }
 
-        // Update local auth context with fresh data (including bikes)
         login(data, token);
       }
     } catch (err) {
@@ -79,12 +84,14 @@ const Profile = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(editData)
       });
       const data = await res.json();
       if (res.ok) {
+        setFormData(editData);
         login(data, token);
         setMessage({ type: 'success', text: t.profile.success });
+        setIsEditing(false);
       } else {
         setMessage({ type: 'error', text: data.message || t.profile.error });
       }
@@ -92,10 +99,11 @@ const Profile = () => {
       setMessage({ type: 'error', text: t.profile.error });
     }
   };
+
   const handleCountryChange = (e) => {
     const code = e.target.value;
     const countryName = allCountries.find(c => c.isoCode === code)?.name || '';
-    setFormData({ ...formData, countryCode: code, country: countryName, city: '' });
+    setEditData({ ...editData, countryCode: code, country: countryName, city: '' });
     if (code) {
       setCities(City.getCitiesOfCountry(code));
     } else {
@@ -110,98 +118,144 @@ const Profile = () => {
       <div className="container">
         <div className="profile-header">
           <div className="profile-avatar">
-            {user.name?.charAt(0).toUpperCase()}
+            {formData.name?.charAt(0).toUpperCase()}
           </div>
           <div className="profile-title-area">
-            <h1>{user.name}</h1>
-            <p className="profile-club">{user.club || 'SIN CLUB'}</p>
+            <h1>{formData.name}</h1>
+            <p className="profile-club">{formData.club || 'SIN CLUB'}</p>
           </div>
+          {!isEditing && (
+            <button className="edit-profile-btn" onClick={() => setIsEditing(true)}>
+              {lang === 'es' ? 'Editar Perfil' : 'Edit Profile'}
+            </button>
+          )}
         </div>
 
         <div className="profile-grid">
           <section className="profile-section">
-            <h2>{t.profile.personalInfo}</h2>
+            <div className="section-header">
+              <h2>{t.profile.personalInfo}</h2>
+            </div>
+            
             {message.text && (
               <div className={`form-message ${message.type}`}>
                 {message.text}
               </div>
             )}
-            <form onSubmit={handleSubmit}>
-              <div className="info-grid">
+
+            {isEditing ? (
+              <form onSubmit={handleSubmit}>
+                <div className="info-grid editing">
+                  <div className="info-item">
+                    <label>{t.auth.name}</label>
+                    <input 
+                      type="text" 
+                      value={editData.name} 
+                      onChange={(e) => setEditData({...editData, name: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="info-item">
+                    <label>{t.auth.email}</label>
+                    <input 
+                      type="email" 
+                      value={editData.email} 
+                      disabled
+                    />
+                  </div>
+                  <div className="info-item">
+                    <label>{t.auth.phone}</label>
+                    <input 
+                      type="tel" 
+                      value={editData.phone} 
+                      onChange={(e) => setEditData({...editData, phone: e.target.value})}
+                      placeholder="+57..."
+                    />
+                  </div>
+                  <div className="info-item">
+                    <label>{t.auth.birthDate}</label>
+                    <input 
+                      type="date" 
+                      value={editData.birthDate} 
+                      onChange={(e) => setEditData({...editData, birthDate: e.target.value})}
+                    />
+                  </div>
+                  <div className="info-item">
+                    <label>{t.auth.country}</label>
+                    <select 
+                      value={editData.countryCode} 
+                      onChange={handleCountryChange} 
+                      required
+                    >
+                      <option value="">{lang === 'es' ? 'Selecciona un país' : 'Select a country'}</option>
+                      {allCountries.map(c => (
+                        <option key={c.isoCode} value={c.isoCode}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="info-item">
+                    <label>{t.auth.city}</label>
+                    <select 
+                      value={editData.city} 
+                      onChange={(e) => setEditData({...editData, city: e.target.value})} 
+                      required
+                      disabled={!editData.countryCode}
+                    >
+                      <option value="">{lang === 'es' ? 'Selecciona una ciudad' : 'Select a city'}</option>
+                      {cities.map((c, index) => (
+                        <option key={`${c.name}-${index}`} value={c.name}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="info-item full-width">
+                    <label>{t.auth.club}</label>
+                    <input 
+                      type="text" 
+                      value={editData.club} 
+                      onChange={(e) => setEditData({...editData, club: e.target.value.toUpperCase()})}
+                      className="uppercase-input"
+                    />
+                  </div>
+                </div>
+                <div className="edit-actions">
+                  <button type="submit" className="cta save-btn">{t.profile.saveChanges}</button>
+                  <button type="button" className="cancel-btn" onClick={() => setIsEditing(false)}>
+                    {lang === 'es' ? 'Cancelar' : 'Cancel'}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="info-grid view-mode">
                 <div className="info-item">
                   <label>{t.auth.name}</label>
-                  <input 
-                    type="text" 
-                    value={formData.name} 
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    required
-                  />
+                  <p className="view-value">{formData.name}</p>
                 </div>
                 <div className="info-item">
                   <label>{t.auth.email}</label>
-                  <input 
-                    type="email" 
-                    value={formData.email} 
-                    disabled
-                  />
-                  <small style={{color: 'var(--text-muted)'}}>El email no se puede cambiar</small>
+                  <p className="view-value">{formData.email}</p>
                 </div>
                 <div className="info-item">
                   <label>{t.auth.phone}</label>
-                  <input 
-                    type="tel" 
-                    value={formData.phone} 
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                    placeholder="+57..."
-                  />
+                  <p className="view-value">{formData.phone || '—'}</p>
                 </div>
                 <div className="info-item">
                   <label>{t.auth.birthDate}</label>
-                  <input 
-                    type="date" 
-                    value={formData.birthDate} 
-                    onChange={(e) => setFormData({...formData, birthDate: e.target.value})}
-                  />
+                  <p className="view-value">{formData.birthDate ? new Date(formData.birthDate + 'T00:00:00').toLocaleDateString() : '—'}</p>
                 </div>
                 <div className="info-item">
                   <label>{t.auth.country}</label>
-                  <select 
-                    value={formData.countryCode} 
-                    onChange={handleCountryChange} 
-                    required
-                  >
-                    <option value="">{lang === 'es' ? 'Selecciona un país' : 'Select a country'}</option>
-                    {allCountries.map(c => (
-                      <option key={c.isoCode} value={c.isoCode}>{c.name}</option>
-                    ))}
-                  </select>
+                  <p className="view-value">{formData.country || '—'}</p>
                 </div>
                 <div className="info-item">
                   <label>{t.auth.city}</label>
-                  <select 
-                    value={formData.city} 
-                    onChange={(e) => setFormData({...formData, city: e.target.value})} 
-                    required
-                    disabled={!formData.countryCode}
-                  >
-                    <option value="">{lang === 'es' ? 'Selecciona una ciudad' : 'Select a city'}</option>
-                    {cities.map((c, index) => (
-                      <option key={`${c.name}-${index}`} value={c.name}>{c.name}</option>
-                    ))}
-                  </select>
+                  <p className="view-value">{formData.city || '—'}</p>
                 </div>
                 <div className="info-item full-width">
                   <label>{t.auth.club}</label>
-                  <input 
-                    type="text" 
-                    value={formData.club} 
-                    onChange={(e) => setFormData({...formData, club: e.target.value.toUpperCase()})}
-                    className="uppercase-input"
-                  />
+                  <p className="view-value club-highlight">{formData.club || 'SIN CLUB'}</p>
                 </div>
               </div>
-              <button type="submit" className="cta save-btn">{t.profile.saveChanges}</button>
-            </form>
+            )}
           </section>
 
           <aside className="profile-stats">
