@@ -7,7 +7,7 @@ import './Profile.css';
 
 const Profile = () => {
   const { user, login } = useAuth();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
