@@ -26,7 +26,19 @@ exports.register = async (req, res) => {
     });
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.status(201).json({ user: { id: user.id, email: user.email, name: user.name }, token });
+    res.status(201).json({ 
+      user: { 
+        id: user.id, 
+        email: user.email, 
+        name: user.name,
+        birthDate: user.birthDate,
+        country: user.country,
+        city: user.city,
+        phone: user.phone,
+        club: user.club
+      }, 
+      token 
+    });
   } catch (error) {
     res.status(500).json({ message: 'Error creating user', error: error.message });
   }
@@ -46,7 +58,19 @@ exports.login = async (req, res) => {
     }
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.json({ user: { id: user.id, email: user.email, name: user.name }, token });
+    res.json({ 
+      user: { 
+        id: user.id, 
+        email: user.email, 
+        name: user.name,
+        birthDate: user.birthDate,
+        country: user.country,
+        city: user.city,
+        phone: user.phone,
+        club: user.club
+      }, 
+      token 
+    });
   } catch (error) {
     res.status(500).json({ message: 'Error logging in', error: error.message });
   }

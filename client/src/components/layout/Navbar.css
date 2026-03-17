@@ -100,6 +100,13 @@
   letter-spacing: 0.05rem;
   text-transform: uppercase;
   text-shadow: 0 0 10px rgba(255, 174, 0, 0.3);
+  text-decoration: none;
+  transition: all 0.3s;
+}
+
+.user-name:hover {
+  color: #fff;
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
 }
 
 .logout-btn {

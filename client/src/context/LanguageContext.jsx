@@ -74,6 +74,13 @@ export const translations = {
       hasAccount: '¿Ya tienes cuenta?',
       error: 'Error en la autenticación'
     },
+    profile: {
+      title: 'Mi Perfil',
+      personalInfo: 'Información Personal',
+      saveChanges: 'Guardar Cambios',
+      success: 'Perfil actualizado con éxito',
+      error: 'Error al actualizar el perfil'
+    },
     common: {
       language: 'Idioma'
     }
@@ -148,6 +155,13 @@ export const translations = {
       noAccount: "Don't have an account?",
       hasAccount: 'Already have an account?',
       error: 'Authentication error'
+    },
+    profile: {
+      title: 'My Profile',
+      personalInfo: 'Personal Information',
+      saveChanges: 'Save Changes',
+      success: 'Profile updated successfully',
+      error: 'Error updating profile'
     },
     common: {
       language: 'Language'

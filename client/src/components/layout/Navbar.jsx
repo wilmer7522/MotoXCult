@@ -43,7 +43,7 @@ const Navbar = () => {
           </>
         ) : (
           <div className="user-nav-actions">
-            <span className="user-name">{user?.name}</span>
+            <Link to="/profile" className="user-name">{user?.name}</Link>
             <button className="logout-btn" onClick={logout}>Cerrar Sesión</button>
           </div>
         )}
