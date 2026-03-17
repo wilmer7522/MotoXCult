@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { API_URL } from '../config';
+import { Country, City } from 'country-state-city';
 import './Profile.css';
 
 const Profile = () => {
@@ -14,8 +15,11 @@ const Profile = () => {
     birthDate: '',
     country: '',
     city: '',
-    club: ''
+    club: '',
+    countryCode: ''
   });
+  const [cities, setCities] = useState([]);
+  const allCountries = Country.getAllCountries().filter(c => c.region === 'Americas');
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState({ type: '', text: '' });
 
@@ -36,15 +40,23 @@ const Profile = () => {
         // Formatear fecha para el input date (YYYY-MM-DD)
         const formattedDate = data.birthDate ? new Date(data.birthDate).toISOString().split('T')[0] : '';
         
+        const countryCode = allCountries.find(c => c.name === data.country)?.isoCode || '';
+        
         setFormData({
           name: data.name || '',
           email: data.email || '',
           phone: data.phone || '',
           birthDate: formattedDate,
           country: data.country || '',
+          countryCode: countryCode,
           city: data.city || '',
           club: data.club || ''
         });
+
+        if (countryCode) {
+          setCities(City.getCitiesOfCountry(countryCode));
+        }
+
         // Update local auth context with fresh data (including bikes)
         login(data, token);
       }
@@ -77,6 +89,16 @@ const Profile = () => {
       }
     } catch (err) {
       setMessage({ type: 'error', text: t.profile.error });
+    }
+  };
+  const handleCountryChange = (e) => {
+    const code = e.target.value;
+    const countryName = allCountries.find(c => c.isoCode === code)?.name || '';
+    setFormData({ ...formData, countryCode: code, country: countryName, city: '' });
+    if (code) {
+      setCities(City.getCitiesOfCountry(code));
+    } else {
+      setCities([]);
     }
   };
 
@@ -142,19 +164,30 @@ const Profile = () => {
                 </div>
                 <div className="info-item">
                   <label>{t.auth.country}</label>
-                  <input 
-                    type="text" 
-                    value={formData.country} 
-                    onChange={(e) => setFormData({...formData, country: e.target.value})}
-                  />
+                  <select 
+                    value={formData.countryCode} 
+                    onChange={handleCountryChange} 
+                    required
+                  >
+                    <option value="">{lang === 'es' ? 'Selecciona un país' : 'Select a country'}</option>
+                    {allCountries.map(c => (
+                      <option key={c.isoCode} value={c.isoCode}>{c.name}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="info-item">
                   <label>{t.auth.city}</label>
-                  <input 
-                    type="text" 
+                  <select 
                     value={formData.city} 
-                    onChange={(e) => setFormData({...formData, city: e.target.value})}
-                  />
+                    onChange={(e) => setFormData({...formData, city: e.target.value})} 
+                    required
+                    disabled={!formData.countryCode}
+                  >
+                    <option value="">{lang === 'es' ? 'Selecciona una ciudad' : 'Select a city'}</option>
+                    {cities.map((c, index) => (
+                      <option key={`${c.name}-${index}`} value={c.name}>{c.name}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="info-item full-width">
                   <label>{t.auth.club}</label>

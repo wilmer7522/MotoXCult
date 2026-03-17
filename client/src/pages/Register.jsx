@@ -3,22 +3,24 @@ import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { API_URL } from '../config';
+import { Country, City } from 'country-state-city';
 import './Auth.css';
 
 const Register = () => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ 
-    name: '', 
-    email: '', 
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
     password: '',
-    birthDate: '',
-    country: '',
-    city: '',
     phone: '',
-    club: ''
+    country: '',
+    countryCode: '',
+    city: ''
   });
+  const [cities, setCities] = useState([]);
+  const allCountries = Country.getAllCountries().filter(c => c.region === 'Americas');
   const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
@@ -38,6 +40,17 @@ const Register = () => {
       }
     } catch (err) {
       setError(t.auth.error);
+    }
+  };
+
+  const handleCountryChange = (e) => {
+    const code = e.target.value;
+    const countryName = allCountries.find(c => c.isoCode === code)?.name || '';
+    setFormData({ ...formData, countryCode: code, country: countryName, city: '' });
+    if (code) {
+      setCities(City.getCitiesOfCountry(code));
+    } else {
+      setCities([]);
     }
   };
 
@@ -100,23 +113,30 @@ const Register = () => {
               </div>
               <div className="form-group">
                 <label>{t.auth.country}</label>
-                <input 
-                  type="text" 
-                  placeholder="Ej. Colombia"
-                  value={formData.country} 
-                  onChange={(e) => setFormData({...formData, country: e.target.value})} 
-                  required 
-                />
+                <select 
+                  value={formData.countryCode} 
+                  onChange={handleCountryChange} 
+                  required
+                >
+                  <option value="">{lang === 'es' ? 'Selecciona un país' : 'Select a country'}</option>
+                  {allCountries.map(c => (
+                    <option key={c.isoCode} value={c.isoCode}>{c.name}</option>
+                  ))}
+                </select>
               </div>
               <div className="form-group">
                 <label>{t.auth.city}</label>
-                <input 
-                  type="text" 
-                  placeholder="Ej. Medellín"
+                <select 
                   value={formData.city} 
                   onChange={(e) => setFormData({...formData, city: e.target.value})} 
-                  required 
-                />
+                  required
+                  disabled={!formData.countryCode}
+                >
+                  <option value="">{lang === 'es' ? 'Selecciona una ciudad' : 'Select a city'}</option>
+                  {cities.map((c, index) => (
+                    <option key={`${c.name}-${index}`} value={c.name}>{c.name}</option>
+                  ))}
+                </select>
               </div>
               <div className="form-group full-width">
                 <label>{t.auth.club}</label>
