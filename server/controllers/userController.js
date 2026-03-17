@@ -21,6 +21,34 @@ exports.getProfile = async (req, res) => {
   }
 };
 
+exports.updateProfile = async (req, res) => {
+  const { name, birthDate, country, city, phone, club, bio, location, nickname } = req.body;
+  try {
+    const updatedUser = await prisma.user.update({
+      where: { id: req.user.id },
+      data: {
+        name,
+        birthDate: birthDate ? new Date(birthDate) : undefined,
+        country,
+        city,
+        phone,
+        club: club ? club.toUpperCase() : undefined,
+        bio,
+        location,
+        nickname
+      },
+      include: {
+        bikes: true
+      }
+    });
+
+    const { password, ...userWithoutPassword } = updatedUser;
+    res.json(userWithoutPassword);
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating profile', error: error.message });
+  }
+};
+
 exports.addBike = async (req, res) => {
   const { brand, model, year, nickname, photo } = req.body;
   try {

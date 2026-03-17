@@ -9,6 +9,7 @@ const photoController = require('../controllers/photoController');
 
 // User profile and management routes
 router.get('/me', auth, userController.getProfile);
+router.put('/me', auth, userController.updateProfile);
 router.post('/bikes', auth, userController.addBike);
 router.delete('/bikes/:id', auth, userController.deleteBike);
 router.post('/photos', auth, upload.single('image'), photoController.uploadPhoto);
