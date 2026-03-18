@@ -26,6 +26,8 @@ const Profile = () => {
 
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({...formData});
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
 
   useEffect(() => {
     fetchUserData();
@@ -56,7 +58,8 @@ const Profile = () => {
           country: data.country || '',
           countryCode: countryCode,
           city: data.city || '',
-          club: data.club || ''
+          club: data.club || '',
+          avatar: data.avatar || ''
         };
         setFormData(newData);
 
@@ -73,30 +76,69 @@ const Profile = () => {
     }
   };
 
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setAvatarFile(file);
+      setAvatarPreview(URL.createObjectURL(file));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage({ type: '', text: '' });
+    setLoading(true);
+    
     try {
       const token = localStorage.getItem('token');
+      let currentAvatarUrl = editData.avatar;
+
+      // 1. Upload avatar if changed
+      if (avatarFile) {
+        const formDataAvatar = new FormData();
+        formDataAvatar.append('avatar', avatarFile);
+        
+        const avatarRes = await fetch(`https://motoxcult-api.onrender.com/api/users/me/avatar`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formDataAvatar
+        });
+        
+        const avatarData = await avatarRes.json();
+        if (avatarRes.ok) {
+          currentAvatarUrl = avatarData.avatar;
+        } else {
+          throw new Error(avatarData.message || 'Error uploading avatar');
+        }
+      }
+
+      // 2. Update profile data
       const res = await fetch(`https://motoxcult-api.onrender.com/api/users/me`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(editData)
+        body: JSON.stringify({ ...editData, avatar: currentAvatarUrl })
       });
+      
       const data = await res.json();
       if (res.ok) {
-        setFormData(editData);
+        setFormData({ ...editData, avatar: currentAvatarUrl });
         login(data, token);
         setMessage({ type: 'success', text: t.profile.success });
         setIsEditing(false);
+        setAvatarFile(null);
+        setAvatarPreview(null);
       } else {
         setMessage({ type: 'error', text: data.message || t.profile.error });
       }
     } catch (err) {
-      setMessage({ type: 'error', text: t.profile.error });
+      setMessage({ type: 'error', text: err.message || t.profile.error });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -111,14 +153,37 @@ const Profile = () => {
     }
   };
 
-  if (!user || loading) return <div className="loading-screen">Cargando perfil...</div>;
+  const cancelEdit = () => {
+    setIsEditing(false);
+    setAvatarFile(null);
+    setAvatarPreview(null);
+    setEditData({...formData});
+  };
+
+  if (!user || loading && !isEditing) return <div className="loading-screen">Cargando perfil...</div>;
 
   return (
     <div className="profile-page full-bleed">
       <div className="container">
         <div className="profile-header">
-          <div className="profile-avatar">
-            {formData.name?.charAt(0).toUpperCase()}
+          <div className={`profile-avatar ${isEditing ? 'editing' : ''}`}>
+            {avatarPreview || formData.avatar ? (
+              <img src={avatarPreview || formData.avatar} alt="Avatar" />
+            ) : (
+              formData.name?.charAt(0).toUpperCase()
+            )}
+            
+            {isEditing && (
+              <label className="avatar-edit-overlay">
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleAvatarChange} 
+                  hidden 
+                />
+                <span className="edit-icon">📸</span>
+              </label>
+            )}
           </div>
           <div className="profile-title-area">
             <h1>{formData.name}</h1>
@@ -219,7 +284,7 @@ const Profile = () => {
                 </div>
                 <div className="edit-actions">
                   <button type="submit" className="cta save-btn">{t.profile.saveChanges}</button>
-                  <button type="button" className="cancel-btn" onClick={() => setIsEditing(false)}>
+                  <button type="button" className="cancel-btn" onClick={cancelEdit}>
                     {lang === 'es' ? 'Cancelar' : 'Cancel'}
                   </button>
                 </div>
