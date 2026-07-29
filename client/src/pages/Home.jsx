@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { Calendar, MessageSquare, Flame, Sun, Palmtree } from 'lucide-react';
-import heroImage from '/assets/hero_biker_extended_road.png';
+import heroImage from '/assets/Home.png';
 import './Home.css';
 
 const Home = () => {
@@ -12,7 +12,7 @@ const Home = () => {
 
   return (
     <div className="home-page">
-      {/* HERO SECTION - UNCROPPED FULL EXTENDED ROAD IMAGE */}
+      {/* HERO SECTION WITH EMBEDDED CONTENT DIRECTLY ON THE ROAD */}
       <section className="hero full-bleed">
         <div className="hero-img-wrapper">
           <img src={heroImage} alt="MOTO X CULT Portada" className="hero-full-img" />
@@ -33,12 +33,9 @@ const Home = () => {
             )}
           </div>
         </div>
-      </section>
 
-      {/* MAIN CONTENT WRAPPER */}
-      <div className="content-wrap">
-        <div className="container">
-          
+        {/* CONTENT EMBEDDED DIRECTLY AT THE BOTTOM OF THE HERO IMAGE ON THE ROAD */}
+        <div className="hero-road-content container">
           {/* PRÓXIMAS RODADAS SECTION */}
           <section className="rodadas-section">
             <h2 className="section-title-clean">PRÓXIMAS RODADAS</h2>
@@ -118,9 +115,8 @@ const Home = () => {
               </div>
             </div>
           </section>
-
         </div>
-      </div>
+      </section>
     </div>
   );
 };

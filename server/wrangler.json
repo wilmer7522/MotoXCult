@@ -1,0 +1,19 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "motoxcult-api",
+	"main": "worker.mjs",
+	"compatibility_date": "2024-09-23",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"vars": {
+		"GMAIL_USER": "wilmer7522@gmail.com"
+	},
+	"d1_databases": [
+		{
+			"binding": "motoxcult_db",
+			"database_name": "motoxcult-db",
+			"database_id": "46f35f7c-3b55-4528-9133-7094b051c441"
+		}
+	]
+}

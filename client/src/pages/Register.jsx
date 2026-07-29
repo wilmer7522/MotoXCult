@@ -15,6 +15,7 @@ const Register = () => {
     email: '',
     password: '',
     phone: '',
+    birthDate: '',
     country: '',
     countryCode: '',
     city: ''
@@ -24,10 +25,42 @@ const Register = () => {
   const allCountries = Country.getAllCountries().filter(c => americanCodes.includes(c.isoCode));
   const [error, setError] = useState('');
 
+  const getPhonePrefix = (code) => {
+    if (!code) return '';
+    const cObj = Country.getCountryByCode(code);
+    return cObj ? `+${cObj.phonecode}` : '';
+  };
+
+  const handleCountryChange = (e) => {
+    const code = e.target.value;
+    const countryObj = allCountries.find(c => c.isoCode === code);
+    const countryName = countryObj?.name || '';
+    const prefix = countryObj ? `+${countryObj.phonecode}` : '';
+    
+    let updatedPhone = formData.phone || '';
+    if (!updatedPhone || updatedPhone.startsWith('+')) {
+      updatedPhone = prefix ? `${prefix} ` : '';
+    }
+
+    setFormData({ 
+      ...formData, 
+      countryCode: code, 
+      country: countryName, 
+      city: '',
+      phone: updatedPhone
+    });
+
+    if (code) {
+      setCities(City.getCitiesOfCountry(code));
+    } else {
+      setCities([]);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`https://motoxcult-api.onrender.com/api/auth/register`, {
+      const res = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -44,16 +77,7 @@ const Register = () => {
     }
   };
 
-  const handleCountryChange = (e) => {
-    const code = e.target.value;
-    const countryName = allCountries.find(c => c.isoCode === code)?.name || '';
-    setFormData({ ...formData, countryCode: code, country: countryName, city: '' });
-    if (code) {
-      setCities(City.getCitiesOfCountry(code));
-    } else {
-      setCities([]);
-    }
-  };
+  const currentPrefix = getPhonePrefix(formData.countryCode);
 
   return (
     <div className="auth-page full-bleed">
@@ -63,6 +87,7 @@ const Register = () => {
           {error && <div className="auth-error">{error}</div>}
           <form onSubmit={handleSubmit}>
             <div className="form-grid">
+              {/* 1. Nombre Completo */}
               <div className="form-group">
                 <label>{t.auth.name}</label>
                 <input 
@@ -73,6 +98,8 @@ const Register = () => {
                   required 
                 />
               </div>
+
+              {/* 2. Correo Electrónico */}
               <div className="form-group">
                 <label>{t.auth.email}</label>
                 <input 
@@ -83,6 +110,8 @@ const Register = () => {
                   required 
                 />
               </div>
+
+              {/* 3. Contraseña */}
               <div className="form-group">
                 <label>{t.auth.password}</label>
                 <input 
@@ -93,25 +122,8 @@ const Register = () => {
                   required 
                 />
               </div>
-              <div className="form-group">
-                <label>{t.auth.birthDate}</label>
-                <input 
-                  type="date" 
-                  value={formData.birthDate} 
-                  onChange={(e) => setFormData({...formData, birthDate: e.target.value})} 
-                  required 
-                />
-              </div>
-              <div className="form-group">
-                <label>{t.auth.phone}</label>
-                <input 
-                  type="tel" 
-                  placeholder="+57 300..."
-                  value={formData.phone} 
-                  onChange={(e) => setFormData({...formData, phone: e.target.value})} 
-                  required 
-                />
-              </div>
+
+              {/* 4. País (Primero) */}
               <div className="form-group">
                 <label>{t.auth.country}</label>
                 <select 
@@ -121,10 +133,12 @@ const Register = () => {
                 >
                   <option value="">{lang === 'es' ? 'Selecciona un país' : 'Select a country'}</option>
                   {allCountries.map(c => (
-                    <option key={c.isoCode} value={c.isoCode}>{c.name}</option>
+                    <option key={c.isoCode} value={c.isoCode}>{c.name} (+{c.phonecode})</option>
                   ))}
                 </select>
               </div>
+
+              {/* 5. Ciudad (Dependiente del País) */}
               <div className="form-group">
                 <label>{t.auth.city}</label>
                 <select 
@@ -139,14 +153,31 @@ const Register = () => {
                   ))}
                 </select>
               </div>
+
+              {/* 6. Teléfono (Con prefijo de país dinámico) */}
+              <div className="form-group">
+                <label>{t.auth.phone}</label>
+                <div className={`phone-input-container ${currentPrefix ? 'has-prefix' : ''}`}>
+                  {currentPrefix && (
+                    <span className="phone-prefix-badge">{currentPrefix}</span>
+                  )}
+                  <input 
+                    type="tel" 
+                    placeholder={currentPrefix ? "300 123 4567" : "+57 300 123 4567"}
+                    value={formData.phone} 
+                    onChange={(e) => setFormData({...formData, phone: e.target.value})} 
+                    required 
+                  />
+                </div>
+              </div>
+
+              {/* 7. Fecha de Nacimiento */}
               <div className="form-group full-width">
-                <label>{t.auth.club}</label>
+                <label>{t.auth.birthDate}</label>
                 <input 
-                  type="text" 
-                  placeholder="ESCRIBE AQUÍ EL CLUB"
-                  className="uppercase-input"
-                  value={formData.club} 
-                  onChange={(e) => setFormData({...formData, club: e.target.value.toUpperCase()})} 
+                  type="date" 
+                  value={formData.birthDate} 
+                  onChange={(e) => setFormData({...formData, birthDate: e.target.value})} 
                   required 
                 />
               </div>

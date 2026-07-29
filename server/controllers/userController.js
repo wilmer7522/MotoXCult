@@ -1,5 +1,10 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const { getPrisma } = require('../db');
+
+const prisma = {
+  get user() { return getPrisma().user; },
+  get bike() { return getPrisma().bike; },
+  get photo() { return getPrisma().photo; }
+};
 
 exports.getProfile = async (req, res) => {
   try {
@@ -22,7 +27,7 @@ exports.getProfile = async (req, res) => {
 };
 
 exports.updateProfile = async (req, res) => {
-  const { name, birthDate, country, city, phone, club, bio, location, nickname } = req.body;
+  const { name, birthDate, country, city, phone, club, bio, location, nickname, avatar } = req.body;
   try {
     const updatedUser = await prisma.user.update({
       where: { id: req.user.id },
@@ -35,7 +40,8 @@ exports.updateProfile = async (req, res) => {
         club: club ? club.toUpperCase() : undefined,
         bio,
         location,
-        nickname
+        nickname,
+        avatar
       },
       include: {
         bikes: true
@@ -46,6 +52,28 @@ exports.updateProfile = async (req, res) => {
     res.json(userWithoutPassword);
   } catch (error) {
     res.status(500).json({ message: 'Error updating profile', error: error.message });
+  }
+};
+
+exports.uploadAvatar = async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: 'No image file provided' });
+  }
+
+  try {
+    const updatedUser = await prisma.user.update({
+      where: { id: req.user.id },
+      data: {
+        avatar: req.file.path
+      }
+    });
+
+    res.json({ 
+      message: 'Avatar uploaded successfully', 
+      avatar: updatedUser.avatar 
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error uploading avatar', error: error.message });
   }
 };
 

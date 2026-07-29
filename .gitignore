@@ -1,0 +1,15 @@
+# Environment files
+.env
+*.env
+client/.env
+server/.env
+
+# Node modules & builds
+node_modules
+dist
+.wrangler/
+server/.wrangler/
+
+# System files
+.DS_Store
+Thumbs.db

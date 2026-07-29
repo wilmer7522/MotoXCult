@@ -1,10 +1,11 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 model User {
@@ -23,6 +24,8 @@ model User {
   avatar    String?
   karma     Int      @default(0)
   role      String   @default("USER")
+  resetToken       String?
+  resetTokenExpiry DateTime?
   createdAt DateTime @default(now())
   bikes     Bike[]
   events    Event[]  @relation("EventOrganizer")

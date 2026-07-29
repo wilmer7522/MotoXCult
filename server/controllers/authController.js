@@ -1,7 +1,12 @@
-const { PrismaClient } = require('@prisma/client');
+const { getPrisma } = require('../db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const prisma = new PrismaClient();
+
+const prisma = {
+  get user() { return getPrisma().user; },
+  get bike() { return getPrisma().bike; },
+  get event() { return getPrisma().event; }
+};
 
 exports.register = async (req, res) => {
   const { email, password, name, birthDate, country, city, phone, club } = req.body;
@@ -22,6 +27,9 @@ exports.register = async (req, res) => {
         city,
         phone,
         club: club ? club.toUpperCase() : null
+      },
+      include: {
+        bikes: true
       }
     });
 
@@ -47,7 +55,10 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   const { email, password } = req.body;
   try {
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findUnique({ 
+      where: { email },
+      include: { bikes: true }
+    });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -75,3 +86,81 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: 'Error logging in', error: error.message });
   }
 };
+
+const crypto = require('crypto');
+
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  try {
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ message: 'No existe un usuario registrado con este correo' });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hora de validez
+
+    await prisma.user.update({
+      where: { email },
+      data: {
+        resetToken,
+        resetTokenExpiry
+      }
+    });
+
+    console.log(`[AUTH] Reset token for ${email}: ${resetToken}`);
+
+    res.json({
+      message: 'Se ha generado el token de recuperación con éxito.',
+      resetToken
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error procesando solicitud de recuperación', error: error.message });
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  const { token, newPassword } = req.body;
+  try {
+    if (!token || !newPassword) {
+      return res.status(400).json({ message: 'Token y nueva contraseña son obligatorios' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: 'La contraseña debe tener al menos 6 caracteres' });
+    }
+
+    const user = await prisma.user.findFirst({
+      where: {
+        resetToken: token,
+        resetTokenExpiry: {
+          gt: new Date()
+        }
+      }
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: 'El token de recuperación es inválido o ha expirado' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        resetToken: null,
+        resetTokenExpiry: null
+      }
+    });
+
+    res.json({ message: 'Contraseña restablecida con éxito. Ya puedes iniciar sesión.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error restableciendo la contraseña', error: error.message });
+  }
+};
+

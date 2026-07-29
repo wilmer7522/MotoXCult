@@ -1,6 +1,8 @@
-const { PrismaClient } = require('@prisma/client');
-const sharp = require('sharp');
-const prisma = new PrismaClient();
+const { getPrisma } = require('../db');
+
+const prisma = {
+  get photo() { return getPrisma().photo; }
+};
 
 exports.uploadPhoto = async (req, res) => {
   const { eventId, bikeId } = req.body;

@@ -3,21 +3,61 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { API_URL } from '../config';
 import { Country, City } from 'country-state-city';
+import { 
+  User, 
+  Mail, 
+  Phone, 
+  Calendar, 
+  Award, 
+  Flame, 
+  Bike, 
+  Edit3, 
+  Save, 
+  X, 
+  Camera, 
+  ShieldCheck, 
+  Globe, 
+  Building 
+} from 'lucide-react';
 import './Profile.css';
+
+const formatDateDisplay = (dateStr) => {
+  if (!dateStr) return '—';
+  const cleanStr = String(dateStr).split('T')[0];
+  const parts = cleanStr.split('-');
+  if (parts.length === 3) {
+    const [year, month, day] = parts;
+    const months = [
+      'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+      'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+    ];
+    const mIdx = parseInt(month, 10) - 1;
+    if (mIdx >= 0 && mIdx < 12) {
+      return `${parseInt(day, 10)} de ${months[mIdx]} de ${year}`;
+    }
+  }
+  return cleanStr;
+};
 
 const Profile = () => {
   const { user, login } = useAuth();
   const { t, lang } = useLanguage();
+  
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    birthDate: '',
-    country: '',
-    city: '',
-    club: '',
-    countryCode: ''
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    birthDate: user?.birthDate || user?.birthdate ? (user.birthDate || user.birthdate).split('T')[0] : '',
+    country: user?.country || '',
+    city: user?.city || '',
+    club: user?.club || '',
+    countryCode: '',
+    bio: user?.bio || '',
+    avatar: user?.avatar || '',
+    karma: user?.karma || 0,
+    bikes: []
   });
+
   const [cities, setCities] = useState([]);
   const americanCodes = ['AR', 'BO', 'BR', 'CA', 'CL', 'CO', 'CR', 'CU', 'DO', 'EC', 'SV', 'GT', 'HN', 'MX', 'NI', 'PA', 'PY', 'PE', 'PR', 'UY', 'VE', 'US', 'JM', 'HT', 'TT'];
   const allCountries = Country.getAllCountries().filter(c => americanCodes.includes(c.isoCode));
@@ -34,32 +74,58 @@ const Profile = () => {
   }, []);
 
   useEffect(() => {
+    if (user) {
+      const rawUserDate = user.birthDate || user.birthdate || '';
+      const formattedUserDate = rawUserDate ? rawUserDate.split('T')[0] : '';
+
+      setFormData(prev => ({
+        ...prev,
+        name: user.name || prev.name || '',
+        email: user.email || prev.email || '',
+        phone: user.phone || prev.phone || '',
+        birthDate: prev.birthDate || formattedUserDate,
+        country: user.country || prev.country || '',
+        city: user.city || prev.city || '',
+        club: user.club || prev.club || '',
+        avatar: user.avatar || prev.avatar || '',
+        bio: user.bio || prev.bio || ''
+      }));
+    }
+  }, [user]);
+
+  useEffect(() => {
     setEditData({...formData});
   }, [formData]);
 
   const fetchUserData = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`https://motoxcult-api.onrender.com/api/users/me`, {
+      if (!token) return;
+
+      const res = await fetch(`${API_URL}/api/auth/me`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       const data = await res.json();
       if (res.ok) {
-        const formattedDate = data.birthDate ? new Date(data.birthDate).toISOString().split('T')[0] : '';
+        const rawDate = data.birthDate || data.birthdate || '';
+        const formattedDate = rawDate ? rawDate.split('T')[0] : '';
         const countryCode = allCountries.find(c => c.name === data.country)?.isoCode || '';
         
         const newData = {
-          name: data.name || '',
-          email: data.email || '',
-          phone: data.phone || '',
+          name: data.name || user?.name || '',
+          email: data.email || user?.email || '',
+          phone: data.phone || user?.phone || '',
           birthDate: formattedDate,
-          country: data.country || '',
+          country: data.country || user?.country || '',
           countryCode: countryCode,
-          city: data.city || '',
-          club: data.club || '',
-          avatar: data.avatar || ''
+          city: data.city || user?.city || '',
+          club: data.club || user?.club || '',
+          avatar: data.avatar || user?.avatar || '',
+          bio: data.bio || user?.bio || '',
+          karma: data.karma || user?.karma || 0,
+          bikes: data.bikes || []
         };
         setFormData(newData);
 
@@ -84,6 +150,38 @@ const Profile = () => {
     }
   };
 
+  const getPhonePrefix = (code) => {
+    if (!code) return '';
+    const cObj = Country.getCountryByCode(code);
+    return cObj ? `+${cObj.phonecode}` : '';
+  };
+
+  const handleCountryChange = (e) => {
+    const code = e.target.value;
+    const countryObj = allCountries.find(c => c.isoCode === code);
+    const countryName = countryObj?.name || '';
+    const prefix = countryObj ? `+${countryObj.phonecode}` : '';
+    
+    let updatedPhone = editData.phone || '';
+    if (!updatedPhone || updatedPhone.startsWith('+')) {
+      updatedPhone = prefix ? `${prefix} ` : '';
+    }
+
+    setEditData({ 
+      ...editData, 
+      countryCode: code, 
+      country: countryName, 
+      city: '',
+      phone: updatedPhone
+    });
+
+    if (code) {
+      setCities(City.getCitiesOfCountry(code));
+    } else {
+      setCities([]);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage({ type: '', text: '' });
@@ -93,29 +191,8 @@ const Profile = () => {
       const token = localStorage.getItem('token');
       let currentAvatarUrl = editData.avatar;
 
-      // 1. Upload avatar if changed
-      if (avatarFile) {
-        const formDataAvatar = new FormData();
-        formDataAvatar.append('avatar', avatarFile);
-        
-        const avatarRes = await fetch(`https://motoxcult-api.onrender.com/api/users/me/avatar`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
-          body: formDataAvatar
-        });
-        
-        const avatarData = await avatarRes.json();
-        if (avatarRes.ok) {
-          currentAvatarUrl = avatarData.avatar;
-        } else {
-          throw new Error(avatarData.message || 'Error uploading avatar');
-        }
-      }
-
-      // 2. Update profile data
-      const res = await fetch(`https://motoxcult-api.onrender.com/api/users/me`, {
+      // Update profile data
+      const res = await fetch(`${API_URL}/api/users/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -126,7 +203,16 @@ const Profile = () => {
       
       const data = await res.json();
       if (res.ok) {
-        setFormData({ ...editData, avatar: currentAvatarUrl });
+        const rawDate = data.birthDate || data.birthdate || editData.birthDate || '';
+        const updatedDate = rawDate ? rawDate.split('T')[0] : '';
+        const newSavedData = { 
+          ...editData, 
+          name: data.name || editData.name,
+          email: data.email || editData.email || user?.email,
+          birthDate: updatedDate, 
+          avatar: currentAvatarUrl 
+        };
+        setFormData(newSavedData);
         login(data, token);
         setMessage({ type: 'success', text: t.profile.success });
         setIsEditing(false);
@@ -142,17 +228,6 @@ const Profile = () => {
     }
   };
 
-  const handleCountryChange = (e) => {
-    const code = e.target.value;
-    const countryName = allCountries.find(c => c.isoCode === code)?.name || '';
-    setEditData({ ...editData, countryCode: code, country: countryName, city: '' });
-    if (code) {
-      setCities(City.getCitiesOfCountry(code));
-    } else {
-      setCities([]);
-    }
-  };
-
   const cancelEdit = () => {
     setIsEditing(false);
     setAvatarFile(null);
@@ -160,110 +235,126 @@ const Profile = () => {
     setEditData({...formData});
   };
 
-  if (!user || loading && !isEditing) return <div className="loading-screen">Cargando perfil...</div>;
+  if (!user && loading) {
+    return (
+      <div className="profile-loading-screen">
+        <div className="spinner"></div>
+        <p>Cargando Perfil Motero...</p>
+      </div>
+    );
+  }
+
+  const currentPrefix = getPhonePrefix(editData.countryCode);
+  const activeEmail = formData.email || user?.email || '';
 
   return (
     <div className="profile-page full-bleed">
       <div className="container">
-        <div className="profile-header">
-          <div className={`profile-avatar ${isEditing ? 'editing' : ''}`}>
-            {avatarPreview || formData.avatar ? (
-              <img src={avatarPreview || formData.avatar} alt="Avatar" />
-            ) : (
-              formData.name?.charAt(0).toUpperCase()
-            )}
-            
-            {isEditing && (
-              <label className="avatar-edit-overlay">
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={handleAvatarChange} 
-                  hidden 
-                />
-                <span className="edit-icon">📸</span>
-              </label>
-            )}
+        
+        {/* Banner de Cabecera Estilo VIP / Cyberpunk Biker */}
+        <div className="profile-hero-card">
+          <div className="profile-cover-bg"></div>
+          <div className="profile-header-content">
+            <div className={`profile-avatar-container ${isEditing ? 'editing' : ''}`}>
+              <div className="avatar-ring">
+                {avatarPreview || formData.avatar ? (
+                  <img src={avatarPreview || formData.avatar} alt="Avatar" className="avatar-img" />
+                ) : (
+                  <div className="avatar-fallback">
+                    {formData.name?.charAt(0).toUpperCase() || <User size={48} />}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="profile-identity">
+              <div className="identity-top">
+                <h1>{formData.name || user?.name || 'Motero MotoXCult'}</h1>
+                <span className="biker-badge">
+                  <ShieldCheck size={14} /> MIEMBRO VERIFICADO
+                </span>
+              </div>
+              <p className="profile-club-tag">
+                <Award size={16} /> {formData.club || user?.club ? `CLUB: ${formData.club || user?.club}` : 'SIN CLUB ASIGNADO'}
+              </p>
+            </div>
+
+            <div className="header-action">
+              {!isEditing ? (
+                <button className="btn-edit-glow" onClick={() => setIsEditing(true)}>
+                  <Edit3 size={16} /> {lang === 'es' ? 'Editar Perfil' : 'Edit Profile'}
+                </button>
+              ) : (
+                <button className="btn-cancel-top" onClick={cancelEdit}>
+                  <X size={16} /> {lang === 'es' ? 'Cancelar' : 'Cancel'}
+                </button>
+              )}
+            </div>
           </div>
-          <div className="profile-title-area">
-            <h1>{formData.name}</h1>
-            <p className="profile-club">{formData.club || 'SIN CLUB'}</p>
-          </div>
-          {!isEditing && (
-            <button className="edit-profile-btn" onClick={() => setIsEditing(true)}>
-              {lang === 'es' ? 'Editar Perfil' : 'Edit Profile'}
-            </button>
-          )}
         </div>
 
-        <div className="profile-grid">
-          <section className="profile-section">
-            <div className="section-header">
-              <h2>{t.profile.personalInfo}</h2>
+        <div className="profile-grid-layout">
+          {/* Formulario / Detalle de Información */}
+          <main className="profile-main-card">
+            <div className="card-header-styled">
+              <h2>
+                <User size={22} className="orange-icon" /> {t.profile.personalInfo}
+              </h2>
+              {isEditing && <span className="mode-badge">Modo Edición</span>}
             </div>
-            
+
             {message.text && (
-              <div className={`form-message ${message.type}`}>
+              <div className={`notification-banner ${message.type}`}>
                 {message.text}
               </div>
             )}
 
             {isEditing ? (
-              <form onSubmit={handleSubmit}>
-                <div className="info-grid editing">
-                  <div className="info-item">
-                    <label>{t.auth.name}</label>
+              <form onSubmit={handleSubmit} className="modern-form">
+                <div className="form-grid-2col">
+                  {/* 1. Nombre Completo */}
+                  <div className="input-group">
+                    <label><User size={14} /> {t.auth.name}</label>
                     <input 
                       type="text" 
                       value={editData.name} 
                       onChange={(e) => setEditData({...editData, name: e.target.value})}
+                      placeholder="Tu nombre completo"
                       required
                     />
                   </div>
-                  <div className="info-item">
-                    <label>{t.auth.email}</label>
+
+                  {/* 2. Correo Electrónico (Siempre visible con el correo registrado) */}
+                  <div className="input-group">
+                    <label><Mail size={14} /> {t.auth.email}</label>
                     <input 
                       type="email" 
-                      value={editData.email} 
+                      value={activeEmail} 
                       disabled
+                      className="readonly-input"
                     />
                   </div>
-                  <div className="info-item">
-                    <label>{t.auth.phone}</label>
-                    <input 
-                      type="tel" 
-                      value={editData.phone} 
-                      onChange={(e) => setEditData({...editData, phone: e.target.value})}
-                      placeholder="+57..."
-                    />
-                  </div>
-                  <div className="info-item">
-                    <label>{t.auth.birthDate}</label>
-                    <input 
-                      type="date" 
-                      value={editData.birthDate} 
-                      onChange={(e) => setEditData({...editData, birthDate: e.target.value})}
-                    />
-                  </div>
-                  <div className="info-item">
-                    <label>{t.auth.country}</label>
+
+                  {/* 3. País (Primero) */}
+                  <div className="input-group">
+                    <label><Globe size={14} /> {t.auth.country}</label>
                     <select 
                       value={editData.countryCode} 
                       onChange={handleCountryChange} 
-                      required
                     >
                       <option value="">{lang === 'es' ? 'Selecciona un país' : 'Select a country'}</option>
                       {allCountries.map(c => (
-                        <option key={c.isoCode} value={c.isoCode}>{c.name}</option>
+                        <option key={c.isoCode} value={c.isoCode}>{c.name} (+{c.phonecode})</option>
                       ))}
                     </select>
                   </div>
-                  <div className="info-item">
-                    <label>{t.auth.city}</label>
+
+                  {/* 4. Ciudad (Filtrada según el País) */}
+                  <div className="input-group">
+                    <label><Building size={14} /> {t.auth.city}</label>
                     <select 
                       value={editData.city} 
                       onChange={(e) => setEditData({...editData, city: e.target.value})} 
-                      required
                       disabled={!editData.countryCode}
                     >
                       <option value="">{lang === 'es' ? 'Selecciona una ciudad' : 'Select a city'}</option>
@@ -272,67 +363,105 @@ const Profile = () => {
                       ))}
                     </select>
                   </div>
-                  <div className="info-item full-width">
-                    <label>{t.auth.club}</label>
+
+                  {/* 5. Teléfono (Con el prefijo dinámico del país) */}
+                  <div className="input-group">
+                    <label><Phone size={14} /> {t.auth.phone}</label>
+                    <div className={`phone-input-container ${currentPrefix ? 'has-prefix' : ''}`}>
+                      {currentPrefix && (
+                        <span className="phone-prefix-badge">{currentPrefix}</span>
+                      )}
+                      <input 
+                        type="tel" 
+                        value={editData.phone} 
+                        onChange={(e) => setEditData({...editData, phone: e.target.value})}
+                        placeholder={currentPrefix ? "300 123 4567" : "+57 300 123 4567"}
+                      />
+                    </div>
+                  </div>
+
+                  {/* 6. Fecha de Nacimiento */}
+                  <div className="input-group">
+                    <label><Calendar size={14} /> {t.auth.birthDate}</label>
                     <input 
-                      type="text" 
-                      value={editData.club} 
-                      onChange={(e) => setEditData({...editData, club: e.target.value.toUpperCase()})}
-                      className="uppercase-input"
+                      type="date" 
+                      value={editData.birthDate} 
+                      onChange={(e) => setEditData({...editData, birthDate: e.target.value})}
                     />
                   </div>
                 </div>
-                <div className="edit-actions">
-                  <button type="submit" className="cta save-btn">{t.profile.saveChanges}</button>
-                  <button type="button" className="cancel-btn" onClick={cancelEdit}>
-                    {lang === 'es' ? 'Cancelar' : 'Cancel'}
+
+                <div className="form-actions-bar">
+                  <button type="submit" className="btn-save-glow" disabled={loading}>
+                    <Save size={16} /> {loading ? 'Guardando...' : t.profile.saveChanges}
+                  </button>
+                  <button type="button" className="btn-cancel-glass" onClick={cancelEdit}>
+                    <X size={16} /> {lang === 'es' ? 'Cancelar' : 'Cancel'}
                   </button>
                 </div>
               </form>
             ) : (
-              <div className="info-grid view-mode">
-                <div className="info-item">
-                  <label>{t.auth.name}</label>
-                  <p className="view-value">{formData.name}</p>
+              <div className="profile-display-grid">
+                <div className="display-box">
+                  <span className="box-label"><User size={14} /> {t.auth.name}</span>
+                  <span className="box-value">{formData.name || user?.name || 'Sin especificar'}</span>
                 </div>
-                <div className="info-item">
-                  <label>{t.auth.email}</label>
-                  <p className="view-value">{formData.email}</p>
+
+                <div className="display-box">
+                  <span className="box-label"><Mail size={14} /> {t.auth.email}</span>
+                  <span className="box-value">{activeEmail || 'Sin especificar'}</span>
                 </div>
-                <div className="info-item">
-                  <label>{t.auth.phone}</label>
-                  <p className="view-value">{formData.phone || '—'}</p>
+
+                <div className="display-box">
+                  <span className="box-label"><Globe size={14} /> {t.auth.country}</span>
+                  <span className="box-value">{formData.country || user?.country || '—'}</span>
                 </div>
-                <div className="info-item">
-                  <label>{t.auth.birthDate}</label>
-                  <p className="view-value">{formData.birthDate ? new Date(formData.birthDate + 'T00:00:00').toLocaleDateString() : '—'}</p>
+
+                <div className="display-box">
+                  <span className="box-label"><Building size={14} /> {t.auth.city}</span>
+                  <span className="box-value">{formData.city || user?.city || '—'}</span>
                 </div>
-                <div className="info-item">
-                  <label>{t.auth.country}</label>
-                  <p className="view-value">{formData.country || '—'}</p>
+
+                <div className="display-box">
+                  <span className="box-label"><Phone size={14} /> {t.auth.phone}</span>
+                  <span className="box-value">{formData.phone || user?.phone || '—'}</span>
                 </div>
-                <div className="info-item">
-                  <label>{t.auth.city}</label>
-                  <p className="view-value">{formData.city || '—'}</p>
-                </div>
-                <div className="info-item full-width">
-                  <label>{t.auth.club}</label>
-                  <p className="view-value club-highlight">{formData.club || 'SIN CLUB'}</p>
+
+                <div className="display-box">
+                  <span className="box-label"><Calendar size={14} /> {t.auth.birthDate}</span>
+                  <span className="box-value">
+                    {formatDateDisplay(formData.birthDate || user?.birthDate || user?.birthdate)}
+                  </span>
                 </div>
               </div>
             )}
-          </section>
+          </main>
 
-          <aside className="profile-stats">
-            <div className="stat-card">
-              <h3>Karma</h3>
-              <p className="stat-value">{user.karma || 0}</p>
+          {/* Lateral de Estadísticas e Impacto */}
+          <aside className="profile-sidebar-stats">
+            <div className="stat-glow-card karma-card">
+              <div className="stat-icon-wrapper">
+                <Flame size={28} />
+              </div>
+              <div className="stat-info">
+                <h3>KARMA MOTERO</h3>
+                <span className="stat-number">{formData.karma || user?.karma || 0}</span>
+                <p className="stat-desc">Puntos por rodadas y aporte a la comunidad</p>
+              </div>
             </div>
-            <div className="stat-card">
-              <h3>{t.nav.garage}</h3>
-              <p className="stat-value">{user.bikes?.length || 0}</p>
+
+            <div className="stat-glow-card garage-card">
+              <div className="stat-icon-wrapper">
+                <Bike size={28} />
+              </div>
+              <div className="stat-info">
+                <h3>GARAJE VIRTUAL</h3>
+                <span className="stat-number">{formData.bikes?.length || 0}</span>
+                <p className="stat-desc">Motocicletas registradas en tu garaje</p>
+              </div>
             </div>
           </aside>
+
         </div>
       </div>
     </div>

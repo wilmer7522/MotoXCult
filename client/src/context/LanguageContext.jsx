@@ -28,7 +28,10 @@ export const translations = {
       myGarage: 'Mi Garaje',
       myRides: 'Mis Rodadas',
       messages: 'Mensajes',
-      settings: 'Ajustes'
+      settings: 'Ajustes',
+      brand: 'Marca de la Motocicleta',
+      model: 'Modelo de la Motocicleta',
+      year: 'Año de Fabricación'
     },
     forum: {
       title: 'Últimos Temas',
@@ -72,6 +75,15 @@ export const translations = {
       registerBtn: 'Crear Cuenta',
       noAccount: '¿No tienes cuenta?',
       hasAccount: '¿Ya tienes cuenta?',
+      forgotPassword: '¿Olvidaste tu contraseña?',
+      forgotTitle: 'Recuperar Contraseña',
+      forgotDesc: 'Ingresa tu correo registrado para obtener el enlace o código de recuperación.',
+      sendResetToken: 'Enviar Solicitud',
+      resetTitle: 'Restablecer Contraseña',
+      newPassword: 'Nueva Contraseña',
+      resetTokenLabel: 'Token de Recuperación',
+      resetBtn: 'Guardar Nueva Contraseña',
+      backToLogin: 'Volver a Iniciar Sesión',
       error: 'Error en la autenticación'
     },
     profile: {
@@ -110,7 +122,10 @@ export const translations = {
       myGarage: 'My Garage',
       myRides: 'My Rides',
       messages: 'Messages',
-      settings: 'Settings'
+      settings: 'Settings',
+      brand: 'Motorcycle Brand',
+      model: 'Motorcycle Model',
+      year: 'Model Year'
     },
     forum: {
       title: 'Latest Topics',
@@ -154,6 +169,15 @@ export const translations = {
       registerBtn: 'Register',
       noAccount: "Don't have an account?",
       hasAccount: 'Already have an account?',
+      forgotPassword: 'Forgot your password?',
+      forgotTitle: 'Recover Password',
+      forgotDesc: 'Enter your registered email to get the recovery token or link.',
+      sendResetToken: 'Send Request',
+      resetTitle: 'Reset Password',
+      newPassword: 'New Password',
+      resetTokenLabel: 'Recovery Token',
+      resetBtn: 'Save New Password',
+      backToLogin: 'Back to Login',
       error: 'Authentication error'
     },
     profile: {

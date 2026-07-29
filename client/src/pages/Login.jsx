@@ -56,6 +56,11 @@ const Login = () => {
                 onChange={(e) => setFormData({...formData, password: e.target.value})} 
                 required 
               />
+              <div style={{ textAlign: 'right', marginTop: '0.4rem' }}>
+                <Link to="/forgot-password" style={{ color: 'var(--primary-orange)', fontSize: '0.85rem', textDecoration: 'none' }}>
+                  {t.auth.forgotPassword}
+                </Link>
+              </div>
             </div>
             <button type="submit" className="cta auth-btn">{t.auth.loginBtn}</button>
           </form>

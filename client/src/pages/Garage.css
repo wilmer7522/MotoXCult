@@ -134,34 +134,46 @@
   color: #ff4444;
 }
 
-.bike-grid {
-
+.bikes-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.8rem;
 }
 
 .bike-card {
-  background: var(--bg-card);
-  border-radius: var(--border-radius);
+  background: #0f172a;
+  border-radius: 18px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: transform 0.3s;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .bike-card:hover {
   transform: translateY(-5px);
+  border-color: rgba(255, 140, 0, 0.4);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
 }
 
 .bike-image {
-  height: 250px;
+  width: 100%;
+  aspect-ratio: 4 / 3;
   position: relative;
+  overflow: hidden;
+  background: #020617;
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
 }
 
 .bike-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+  display: block;
 }
 
 .bike-number {
@@ -188,5 +200,166 @@
 .bike-actions {
   display: flex;
   gap: 1rem;
+}
+
+/* Subida de Archivos y Toggles estilo Clubes/Cyberpunk */
+.label-row-with-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.label-row-with-toggle label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  font-size: 0.9rem;
+  margin-bottom: 0;
+}
+
+.toggle-mode-pills {
+  display: flex;
+  gap: 0.35rem;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  padding: 5px 12px;
+  border-radius: 7px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pill-btn:hover {
+  color: #ffffff;
+}
+
+.pill-btn.active {
+  background: #ff8c00;
+  color: #000000;
+  box-shadow: 0 0 12px rgba(255, 140, 0, 0.4);
+}
+
+.file-upload-box {
+  margin-top: 0.5rem;
+}
+
+.file-upload-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1.8rem 1.5rem;
+  background: rgba(255, 140, 0, 0.03);
+  border: 2px dashed rgba(255, 140, 0, 0.35);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.file-upload-dropzone:hover {
+  border-color: #ff8c00;
+  background: rgba(255, 140, 0, 0.08);
+  box-shadow: 0 0 20px rgba(255, 140, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.dropzone-icon-circle {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(255, 140, 0, 0.15);
+  color: #ff8c00;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 140, 0, 0.4);
+  transition: all 0.3s ease;
+}
+
+.file-upload-dropzone:hover .dropzone-icon-circle {
+  transform: scale(1.1);
+  background: #ff8c00;
+  color: #000000;
+}
+
+.dropzone-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  text-align: center;
+}
+
+.dropzone-text .primary-text {
+  color: #f1f5f9;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.dropzone-text .secondary-text {
+  color: #64748b;
+  font-size: 0.75rem;
+}
+
+.modern-url-input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px 16px;
+  border-radius: 10px;
+  color: #ffffff;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.modern-url-input:focus {
+  border-color: #ff8c00;
+  box-shadow: 0 0 10px rgba(255, 140, 0, 0.2);
+  outline: none;
+}
+
+.bike-image-preview-container {
+  margin-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 140, 0, 0.3);
+}
+
+.preview-tag {
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: #ff8c00;
+}
+
+.bike-preview-img {
+  max-height: 200px;
+  width: 100%;
+  max-width: 400px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 2px solid #ff8c00;
+  box-shadow: 0 0 20px rgba(255, 140, 0, 0.25);
 }
 

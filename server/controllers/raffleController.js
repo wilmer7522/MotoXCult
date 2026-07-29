@@ -1,5 +1,9 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const { getPrisma } = require('../db');
+
+const prisma = {
+  get giveaway() { return getPrisma().giveaway; },
+  get ticket() { return getPrisma().ticket; }
+};
 
 exports.buyTicket = async (req, res) => {
   const { userId, giveawayId } = req.body;
