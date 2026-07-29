@@ -13,7 +13,7 @@ const Home = () => {
     <div className="home-page">
       {/* HERO SECTION */}
       <section className="hero full-bleed">
-        <div className="hero-bg" style={{ backgroundImage: `url('/assets/hero_banner.png')` }}></div>
+        <div className="hero-bg" style={{ backgroundImage: `url('/assets/Home.png')` }}></div>
         <div className="hero-overlay"></div>
         
         <div className="hero-container container">
