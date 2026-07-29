@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
-import { Play, Calendar, MessageSquare, Flame, Sun, Palmtree } from 'lucide-react';
+import { Calendar, MessageSquare, Flame, Sun, Palmtree } from 'lucide-react';
 import './Home.css';
 
 const Home = () => {
@@ -28,12 +28,6 @@ const Home = () => {
                 <button className="hero-cta-btn">Crea tu Cuenta Gratis</button>
               </Link>
             )}
-          </div>
-
-          <div className="hero-play-center">
-            <button className="hero-play-btn" aria-label="Ver video">
-              <Play size={28} className="play-icon" />
-            </button>
           </div>
         </div>
       </section>
