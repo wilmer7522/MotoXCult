@@ -86,9 +86,8 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <Link to="/" className="nav-logo">
-        <span style={{ fontSize: '1.4rem', fontWeight: 900, letterSpacing: '1px' }}>
-          MOTO-<span style={{ color: '#ffba00' }}>X</span> CULT
-        </span>
+        <img src="/assets/logo.png" alt="MOTO X CULT Logo" />
+        <span>MOTO X CULT</span>
       </Link>
       
       <ul className="nav-links">

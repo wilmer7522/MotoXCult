@@ -2,14 +2,13 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.2rem 6%;
-  background: rgba(14, 16, 18, 0.95);
-  backdrop-filter: blur(12px);
+  padding: 0.8rem 5%;
+  background: #0f1111;
   position: sticky;
   top: 0;
   width: 100%;
   z-index: 1000;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .nav-logo {
@@ -17,49 +16,60 @@
   align-items: center;
   gap: 12px;
   font-weight: 900;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   letter-spacing: 0.5px;
-  color: #fff;
+  color: #ffffff;
   text-decoration: none;
+}
+
+.nav-logo img {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
 }
 
 .nav-links {
   display: flex;
   list-style: none;
-  gap: 2.2rem;
+  gap: 1.8rem;
   align-items: center;
 }
 
 .nav-links a {
   text-decoration: none;
-  color: #94a3b8;
-  font-weight: 600;
-  transition: all 0.25s ease;
-  font-size: 0.92rem;
-  padding: 6px 0;
-  position: relative;
+  color: #a0a0a0;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.88rem;
+  letter-spacing: 0.5px;
+  padding-bottom: 4px;
+  transition: color 0.2s ease;
 }
 
 .nav-links a:hover {
-  color: #ffffff;
+  color: #ff8c00;
 }
 
 .nav-links a.active-nav-link {
-  color: #ffffff;
-  font-weight: 700;
-  border-bottom: 2px solid #ffba00;
+  color: #ff8c00;
+  font-weight: 800;
+  border-bottom: 2px solid #ff8c00;
+  text-shadow: 0 0 10px rgba(255, 140, 0, 0.4);
 }
 
 .nav-links a.admin-link {
   color: #ffd700;
   font-weight: 800;
+  text-transform: uppercase;
 }
 
 .nav-links a.admin-active {
   color: #ffd700;
   font-weight: 900;
   border-bottom: 2px solid #ffd700;
+  padding-bottom: 4px;
   text-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
+  text-transform: uppercase;
 }
 
 .nav-auth {
@@ -69,60 +79,61 @@
 }
 
 .lang-toggle {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 186, 0, 0.4);
-  color: #ffba00;
-  padding: 6px 12px;
-  border-radius: 20px;
+  background: transparent;
+  border: 1px solid #ff8c00;
+  color: #ff8c00;
+  padding: 4px 8px;
+  border-radius: 4px;
   cursor: pointer;
-  font-weight: 700;
+  font-weight: 800;
   font-size: 0.8rem;
-  transition: all 0.3s;
+  transition: all 0.2s;
 }
 
 .lang-toggle:hover {
-  background: #ffba00;
+  background: #ff8c00;
   color: #000;
 }
 
 .login-btn {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid var(--text-muted);
   color: #ffffff;
-  padding: 9px 24px;
-  border-radius: 30px;
+  padding: 8px 20px;
+  border-radius: 20px;
   cursor: pointer;
-  font-weight: 600;
-  font-size: 0.9rem;
-  transition: all 0.25s ease;
+  transition: all 0.3s;
 }
 
 .login-btn:hover {
   border-color: #ffffff;
-  background: rgba(255, 255, 255, 0.08);
+}
+
+.join-btn {
+  padding: 8px 25px !important;
 }
 
 /* User Actions */
 .user-nav-actions {
   display: flex;
   align-items: center;
-  gap: 2.5rem; /* More spacing between name and button */
-  margin-left: 1rem;
+  gap: 1.5rem;
+  margin-left: 0.5rem;
 }
 
 .user-name {
-  color: var(--primary-orange);
-  font-weight: 700;
-  font-size: 0.95rem;
-  letter-spacing: 0.05rem;
+  color: #ff8c00;
+  font-weight: 800;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
-  text-shadow: 0 0 10px rgba(255, 174, 0, 0.3);
+  text-shadow: 0 0 10px rgba(255, 140, 0, 0.3);
   text-decoration: none;
   transition: all 0.3s;
 }
 
 .user-name:hover {
-  color: #fff;
+  color: #ffffff;
   text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
 }
 
@@ -130,32 +141,21 @@
   background: rgba(255, 77, 77, 0.05);
   border: 1px solid rgba(255, 77, 77, 0.3);
   color: #ff4d4d;
-  padding: 8px 20px;
+  padding: 6px 16px;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.8rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.03rem;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  letter-spacing: 0.5px;
+  transition: all 0.3s;
 }
 
 .logout-btn:hover {
   background: #ff4d4d;
-  color: #fff;
+  color: #ffffff;
   border-color: #ff4d4d;
   box-shadow: 0 0 15px rgba(255, 77, 77, 0.4);
-  transform: translateY(-2px);
-}
-
-.logout-btn:active {
-  transform: scale(0.95);
-}
-
-.user-nav-actions {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
 }
 
 .notification-bell-btn {
@@ -163,8 +163,8 @@
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: #cbd5e1;
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -184,7 +184,7 @@
   top: -2px;
   right: -2px;
   background: #ef4444;
-  color: #fff;
+  color: #ffffff;
   font-size: 0.7rem;
   font-weight: 900;
   width: 18px;
@@ -195,13 +195,6 @@
   justify-content: center;
   border: 2px solid #121212;
   box-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
-  animation: pulse-dot 2s infinite;
-}
-
-@keyframes pulse-dot {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.15); }
-  100% { transform: scale(1); }
 }
 
 .notifications-dropdown {
@@ -215,12 +208,6 @@
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.85);
   z-index: 2000;
   overflow: hidden;
-  animation: fadeInDown 0.25s ease-out;
-}
-
-@keyframes fadeInDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 .notif-header {
@@ -250,10 +237,6 @@
   cursor: pointer;
 }
 
-.btn-mark-read:hover {
-  text-decoration: underline;
-}
-
 .notif-list {
   max-height: 320px;
   overflow-y: auto;
@@ -267,35 +250,10 @@
   display: flex;
   gap: 12px;
   align-items: flex-start;
-  transition: background 0.2s;
-}
-
-.notif-item:hover {
-  background: rgba(255, 255, 255, 0.03);
 }
 
 .notif-item.unread {
   background: rgba(255, 140, 0, 0.06);
-}
-
-.notif-icon {
-  font-size: 1.2rem;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.notif-content p {
-  margin: 0;
-  font-size: 0.84rem;
-  color: #cbd5e1;
-  line-height: 1.35;
-}
-
-.notif-time {
-  display: block;
-  font-size: 0.72rem;
-  color: #64748b;
-  margin-top: 4px;
 }
 
 .notif-empty {
