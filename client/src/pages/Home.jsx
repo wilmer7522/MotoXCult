@@ -11,10 +11,12 @@ const Home = () => {
 
   return (
     <div className="home-page">
-      {/* HERO SECTION */}
+      {/* HERO SECTION - UNCROPPED FULL NATURAL IMAGE */}
       <section className="hero full-bleed">
-        <div className="hero-bg" style={{ backgroundImage: `url('/assets/Home.png')` }}></div>
-        <div className="hero-overlay"></div>
+        <div className="hero-img-wrapper">
+          <img src="/assets/Home.png" alt="MOTO X CULT Portada" className="hero-full-img" />
+          <div className="hero-overlay"></div>
+        </div>
         
         <div className="hero-container container">
           <div className="hero-content">
