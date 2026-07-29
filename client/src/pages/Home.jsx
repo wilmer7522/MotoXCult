@@ -14,7 +14,7 @@ const Home = () => {
       {/* HERO SECTION - UNCROPPED FULL NATURAL IMAGE */}
       <section className="hero full-bleed">
         <div className="hero-img-wrapper">
-          <img src="/assets/Home.png?v=20260729_final" alt="MOTO X CULT Portada" className="hero-full-img" />
+          <img src="/assets/hero_biker_extended_road.png" alt="MOTO X CULT Portada" className="hero-full-img" />
           <div className="hero-overlay"></div>
         </div>
         
