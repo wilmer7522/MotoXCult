@@ -35,9 +35,10 @@ function App() {
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 
-                {/* Public Club Routes */}
+                {/* Public Club & Rides Routes */}
                 <Route path="/clubs" element={<Clubs />} />
                 <Route path="/clubs/:id" element={<ClubDetail />} />
+                <Route path="/rides" element={<Rides />} />
 
                 {/* Protected Routes */}
                 <Route 
@@ -61,14 +62,6 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <Garage />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/rides" 
-                  element={
-                    <ProtectedRoute>
-                      <Rides />
                     </ProtectedRoute>
                   } 
                 />
