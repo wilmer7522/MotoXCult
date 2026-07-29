@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { 
   Search, SlidersHorizontal, Plus, Calendar, MapPin, 
-  Mountain, Flame, Users, X, ChevronDown, Check, Compass, Gauge
+  Mountain, Flame, Users, X, ChevronDown, Check, Compass, Gauge,
+  Navigation, CheckCircle2, RotateCcw, ArrowRight
 } from 'lucide-react';
-import { MapContainer, TileLayer, Polyline, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Polyline, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import './Rides.css';
 
@@ -16,11 +17,11 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-// Create Custom Glowing Waypoint Marker Icon
-const createCustomIcon = (label, iconType = 'point') => {
+// Custom Waypoint Marker Creator
+const createCustomIcon = (label, color = '#ff9d00') => {
   const iconHtml = `
     <div className="custom-map-marker">
-      <div className="marker-glow-dot"></div>
+      <div className="marker-glow-dot" style="background: ${color}; box-shadow: 0 0 15px ${color}, 0 0 25px ${color}"></div>
       ${label ? `<div className="marker-label-pill">${label}</div>` : ''}
     </div>
   `;
@@ -43,31 +44,56 @@ const MapViewController = ({ center, zoom }) => {
   return null;
 };
 
+// Component to listen for click events when creating route points
+const MapClickEventsHandler = ({ isCreatingRoute, startPoint, setStartPoint, endPoint, setEndPoint, setRouteCreationStep }) => {
+  useMapEvents({
+    click(e) {
+      if (!isCreatingRoute) return;
+
+      const { lat, lng } = e.latlng;
+      
+      if (!startPoint) {
+        setStartPoint({ lat, lng, name: 'Punto de Partida' });
+        setRouteCreationStep('end');
+      } else if (!endPoint) {
+        setEndPoint({ lat, lng, name: 'Punto de Llegada' });
+        setRouteCreationStep('complete');
+      }
+    }
+  });
+  return null;
+};
+
 const Rides = () => {
   const { t } = useLanguage();
 
-  // Active Filter States
-  const [activeTab, setActiveTab] = useState('all'); // 'create', 'my-rides', 'open', 'all'
+  // Filter & Navigation States
+  const [activeTab, setActiveTab] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('Carretera');
   const [selectedDifficulty, setSelectedDifficulty] = useState('Media');
   const [distanceMax, setDistanceMax] = useState(750);
   const [searchQuery, setSearchQuery] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [selectedRideId, setSelectedRideId] = useState(1);
-  const [showCreateModal, setShowCreateModal] = useState(false);
 
-  // New Ride Form State
-  const [newRide, setNewRide] = useState({
+  // Interactive Route Creator Mode States
+  const [isCreatingRoute, setIsCreatingRoute] = useState(false);
+  const [routeCreationStep, setRouteCreationStep] = useState('start'); // 'start' | 'end' | 'complete'
+  const [startPoint, setStartPoint] = useState(null);
+  const [endPoint, setEndPoint] = useState(null);
+  const [calculatedDistance, setCalculatedDistance] = useState(0);
+  const [calculatedElevation, setCalculatedElevation] = useState(0);
+  const [suggestedDifficulty, setSuggestedDifficulty] = useState('Media');
+  const [showSaveModal, setShowSaveModal] = useState(false);
+
+  // Form State for saving new route
+  const [saveForm, setSaveForm] = useState({
     title: '',
     date: '',
-    type: 'Carretera',
-    difficulty: 'Media',
-    distance: '50km',
-    elevation: '800m',
-    attendees: 1
+    type: 'Carretera'
   });
 
-  // Mock Sample Routes matching reference UI
+  // Sample Rides Data
   const [ridesList, setRidesList] = useState([
     {
       id: 1,
@@ -100,9 +126,7 @@ const Rides = () => {
         { lat: 4.695, lng: -74.005, name: 'Mirador Site Central', type: 'view' },
         { lat: 4.635, lng: -74.055, name: 'Restaurante Biker', type: 'food' },
         { lat: 4.625, lng: -74.085, name: 'Mirador Central', type: 'view' },
-        { lat: 4.640, lng: -74.115, name: 'Mirador Stenam', type: 'view' },
-        { lat: 4.675, lng: -74.125, name: 'Restaurante Biker', type: 'food' },
-        { lat: 4.705, lng: -74.110, name: 'Restaurante Biker', type: 'food' }
+        { lat: 4.640, lng: -74.115, name: 'Mirador Stenam', type: 'view' }
       ]
     },
     {
@@ -128,8 +152,7 @@ const Rides = () => {
       ],
       waypoints: [
         { lat: 4.870, lng: -74.140, name: 'Finca El Cafetal', type: 'view' },
-        { lat: 4.840, lng: -74.080, name: 'Estación de Gasolina', type: 'fuel' },
-        { lat: 4.780, lng: -74.090, name: 'Parador Los Laureles', type: 'food' }
+        { lat: 4.840, lng: -74.080, name: 'Estación de Gasolina', type: 'fuel' }
       ]
     },
     {
@@ -154,48 +177,91 @@ const Rides = () => {
         [4.620, -74.220]
       ],
       waypoints: [
-        { lat: 4.650, lng: -74.150, name: 'Mirador de la Costa', type: 'view' },
-        { lat: 4.610, lng: -74.080, name: 'Restaurante Marisco', type: 'food' }
+        { lat: 4.650, lng: -74.150, name: 'Mirador de la Costa', type: 'view' }
       ]
     }
   ]);
 
   const selectedRide = ridesList.find(r => r.id === selectedRideId) || ridesList[0];
 
-  const handleCreateSubmit = (e) => {
-    e.preventDefault();
-    if (!newRide.title) return;
+  // Calculate distance, elevation, and difficulty when start and end points are set
+  useEffect(() => {
+    if (startPoint && endPoint) {
+      const p1 = L.latLng(startPoint.lat, startPoint.lng);
+      const p2 = L.latLng(endPoint.lat, endPoint.lng);
+      const distMeters = p1.distanceTo(p2);
+      const distKm = (distMeters / 1000).toFixed(1);
+      
+      const elevMeters = Math.round(distKm * 9.5 + 110);
+      const diff = distKm < 25 ? 'Fácil' : distKm < 75 ? 'Media' : 'Difícil';
 
-    const created = {
+      setCalculatedDistance(distKm);
+      setCalculatedElevation(elevMeters);
+      setSuggestedDifficulty(diff);
+    }
+  }, [startPoint, endPoint]);
+
+  const handleStartRouteCreation = () => {
+    setIsCreatingRoute(true);
+    setRouteCreationStep('start');
+    setStartPoint(null);
+    setEndPoint(null);
+    setSelectedRideId(null);
+  };
+
+  const handleResetPoints = () => {
+    setStartPoint(null);
+    setEndPoint(null);
+    setRouteCreationStep('start');
+  };
+
+  const handleCancelRouteCreation = () => {
+    setIsCreatingRoute(false);
+    setStartPoint(null);
+    setEndPoint(null);
+    setSelectedRideId(1);
+  };
+
+  const handleSaveRouteSubmit = (e) => {
+    e.preventDefault();
+    if (!saveForm.title || !startPoint || !endPoint) return;
+
+    // Generate path points between start and end
+    const midLat = (startPoint.lat + endPoint.lat) / 2;
+    const midLng = (startPoint.lng + endPoint.lng) / 2;
+
+    const createdRide = {
       id: Date.now(),
-      title: newRide.title,
-      subtitle: '(Nueva Rodada)',
-      date: newRide.date || 'Próximamente',
-      type: newRide.type,
-      difficulty: newRide.difficulty,
-      elevationDelta: newRide.elevation,
-      distance: newRide.distance,
+      title: saveForm.title,
+      subtitle: `(${startPoint.name} → ${endPoint.name})`,
+      date: saveForm.date || 'Próximamente',
+      type: saveForm.type,
+      difficulty: suggestedDifficulty,
+      elevationDelta: `${calculatedElevation}m`,
+      distance: `${calculatedDistance} km`,
       attendees: 1,
-      center: [4.650, -74.080],
+      center: [midLat, midLng],
       zoom: 12,
       path: [
-        [4.680, -74.100],
-        [4.700, -74.060],
-        [4.670, -74.030],
-        [4.630, -74.050],
-        [4.640, -74.090],
-        [4.680, -74.100]
+        [startPoint.lat, startPoint.lng],
+        [startPoint.lat + 0.015, startPoint.lng + 0.02],
+        [midLat + 0.01, midLng - 0.015],
+        [endPoint.lat - 0.01, endPoint.lng + 0.01],
+        [endPoint.lat, endPoint.lng]
       ],
       waypoints: [
-        { lat: 4.700, lng: -74.060, name: 'Punto de Salida', type: 'view' },
-        { lat: 4.670, lng: -74.030, name: 'Parador Biker', type: 'food' }
+        { lat: startPoint.lat, lng: startPoint.lng, name: `🟢 ${startPoint.name}`, type: 'view' },
+        { lat: endPoint.lat, lng: endPoint.lng, name: `🔴 ${endPoint.name}`, type: 'food' }
       ]
     };
 
-    setRidesList([created, ...ridesList]);
-    setSelectedRideId(created.id);
-    setShowCreateModal(false);
-    setNewRide({ title: '', date: '', type: 'Carretera', difficulty: 'Media', distance: '50km', elevation: '800m', attendees: 1 });
+    setRidesList([createdRide, ...ridesList]);
+    setSelectedRideId(createdRide.id);
+    setIsCreatingRoute(false);
+    setShowSaveModal(false);
+    setStartPoint(null);
+    setEndPoint(null);
+    setSaveForm({ title: '', date: '', type: 'Carretera' });
   };
 
   const filteredRides = ridesList.filter(ride => {
@@ -206,19 +272,36 @@ const Rides = () => {
     return matchesSearch && matchesCategory && matchesDifficulty;
   });
 
+  // Build live preview path when in creation mode
+  const liveCreationPath = startPoint && endPoint ? [
+    [startPoint.lat, startPoint.lng],
+    [(startPoint.lat + endPoint.lat) / 2 + 0.01, (startPoint.lng + endPoint.lng) / 2 - 0.01],
+    [endPoint.lat, endPoint.lng]
+  ] : [];
+
   return (
     <div className="rides-page-wrapper">
       
       {/* TOP HEADER ACTION BAR */}
       <div className="rides-top-bar">
         <div className="top-bar-left">
-          <button 
-            className="create-ride-cta-btn"
-            onClick={() => setShowCreateModal(true)}
-          >
-            <Plus size={18} />
-            <span>Crear Nueva Rodada</span>
-          </button>
+          {!isCreatingRoute ? (
+            <button 
+              className="create-ride-cta-btn"
+              onClick={handleStartRouteCreation}
+            >
+              <Plus size={18} />
+              <span>Crear Nueva Rodada</span>
+            </button>
+          ) : (
+            <button 
+              className="cancel-route-btn"
+              onClick={handleCancelRouteCreation}
+            >
+              <X size={16} />
+              <span>Cancelar Creador de Ruta</span>
+            </button>
+          )}
 
           <button 
             className={`pill-tab-btn ${activeTab === 'my-rides' ? 'active' : ''}`}
@@ -243,6 +326,50 @@ const Rides = () => {
           </button>
         </div>
       </div>
+
+      {/* FLOATING ROUTE CREATOR INSTRUCTION / CALCULATION BARS */}
+      {isCreatingRoute && (
+        <div className="route-creator-banner-overlay">
+          {routeCreationStep === 'start' && (
+            <div className="creator-step-banner step-start">
+              <span className="step-badge">Paso 1</span>
+              <span>🟢 Haz clic en cualquier lugar del mapa para fijar el <strong>PUNTO DE PARTIDA (Origen)</strong></span>
+            </div>
+          )}
+
+          {routeCreationStep === 'end' && (
+            <div className="creator-step-banner step-end">
+              <span className="step-badge">Paso 2</span>
+              <span>🔴 Haz clic en el mapa para fijar el <strong>PUNTO DE LLEGADA (Destino)</strong></span>
+            </div>
+          )}
+
+          {routeCreationStep === 'complete' && startPoint && endPoint && (
+            <div className="creator-summary-card">
+              <div className="summary-left-info">
+                <div className="summary-points">
+                  <span className="p-start">🟢 Partida</span>
+                  <ArrowRight size={14} />
+                  <span className="p-end">🔴 Llegada</span>
+                </div>
+                <div className="summary-metrics">
+                  <span>📏 Distancia: <strong>{calculatedDistance} km</strong></span>
+                  <span>⛰️ Desnivel: <strong>{calculatedElevation} m</strong></span>
+                  <span>🔥 Dificultad: <strong className="diff-tag">{suggestedDifficulty}</strong></span>
+                </div>
+              </div>
+              <div className="summary-actions">
+                <button className="btn-reset" onClick={handleResetPoints}>
+                  <RotateCcw size={14} /> Reiniciar
+                </button>
+                <button className="btn-confirm-save" onClick={() => setShowSaveModal(true)}>
+                  <CheckCircle2 size={16} /> Guardar y Publicar Rodada
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* MAIN RIDES INTERFACE CANVAS */}
       <div className="rides-canvas">
@@ -329,7 +456,10 @@ const Rides = () => {
                   <div 
                     key={ride.id} 
                     className={`ride-list-card ${selectedRideId === ride.id ? 'selected' : ''}`}
-                    onClick={() => setSelectedRideId(ride.id)}
+                    onClick={() => {
+                      setIsCreatingRoute(false);
+                      setSelectedRideId(ride.id);
+                    }}
                   >
                     <div className="card-numeric-badge">{idx + 1}</div>
                     
@@ -362,7 +492,7 @@ const Rides = () => {
           </aside>
         )}
 
-        {/* INTERACTIVE REAL MAP CANVAS */}
+        {/* REAL INTERACTIVE MAP CANVAS */}
         <main className="real-map-container">
           
           {/* SEARCH OVERLAY IN MAP HEADER */}
@@ -371,7 +501,7 @@ const Rides = () => {
               <Search size={18} className="search-icon" />
               <input 
                 type="text" 
-                placeholder="Fueras a rodada..."
+                placeholder="Buscar rodada por nombre..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="map-search-input"
@@ -381,13 +511,25 @@ const Rides = () => {
           </div>
 
           <MapContainer 
-            center={selectedRide.center} 
-            zoom={selectedRide.zoom} 
+            center={startPoint ? [startPoint.lat, startPoint.lng] : selectedRide ? selectedRide.center : [4.675, -74.065]} 
+            zoom={selectedRide ? selectedRide.zoom : 12} 
             scrollWheelZoom={true}
             className="leaflet-map-element"
             zoomControl={false}
           >
-            <MapViewController center={selectedRide.center} zoom={selectedRide.zoom} />
+            <MapViewController 
+              center={startPoint ? [startPoint.lat, startPoint.lng] : selectedRide ? selectedRide.center : [4.675, -74.065]} 
+              zoom={selectedRide ? selectedRide.zoom : 12} 
+            />
+
+            <MapClickEventsHandler 
+              isCreatingRoute={isCreatingRoute}
+              startPoint={startPoint}
+              setStartPoint={setStartPoint}
+              endPoint={endPoint}
+              setEndPoint={setEndPoint}
+              setRouteCreationStep={setRouteCreationStep}
+            />
 
             {/* CartoDB Dark Matter Base Tiles */}
             <TileLayer
@@ -395,134 +537,181 @@ const Rides = () => {
               url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
             />
 
-            {/* Glowing Neon Blue Route Polyline */}
-            <Polyline 
-              positions={selectedRide.path}
-              pathOptions={{
-                color: '#00d2ff',
-                weight: 5,
-                opacity: 0.95,
-                lineCap: 'round',
-                lineJoin: 'round'
-              }}
-            />
+            {/* RENDER ACTIVE SELECTED ROUTE */}
+            {!isCreatingRoute && selectedRide && (
+              <>
+                <Polyline 
+                  positions={selectedRide.path}
+                  pathOptions={{
+                    color: '#00d2ff',
+                    weight: 5,
+                    opacity: 0.95,
+                    lineCap: 'round',
+                    lineJoin: 'round'
+                  }}
+                />
 
-            {/* Route Waypoint Markers */}
-            {selectedRide.waypoints.map((wp, i) => (
-              <Marker 
-                key={i} 
-                position={[wp.lat, wp.lng]}
-                icon={createCustomIcon(wp.name, wp.type)}
-              >
-                <Popup className="custom-leaflet-popup">
-                  <strong>{wp.name}</strong>
-                </Popup>
-              </Marker>
-            ))}
+                {selectedRide.waypoints.map((wp, i) => (
+                  <Marker 
+                    key={i} 
+                    position={[wp.lat, wp.lng]}
+                    icon={createCustomIcon(wp.name, '#ff9d00')}
+                  >
+                    <Popup className="custom-leaflet-popup">
+                      <strong>{wp.name}</strong>
+                    </Popup>
+                  </Marker>
+                ))}
+              </>
+            )}
+
+            {/* RENDER LIVE CREATION ROUTE (START & END MARKERS) */}
+            {isCreatingRoute && (
+              <>
+                {startPoint && (
+                  <Marker 
+                    position={[startPoint.lat, startPoint.lng]}
+                    icon={createCustomIcon('🟢 Punto de Partida', '#22c55e')}
+                  >
+                    <Popup>🟢 Punto de Partida (Origen)</Popup>
+                  </Marker>
+                )}
+
+                {endPoint && (
+                  <Marker 
+                    position={[endPoint.lat, endPoint.lng]}
+                    icon={createCustomIcon('🔴 Punto de Llegada', '#ef4444')}
+                  >
+                    <Popup>🔴 Punto de Llegada (Destino)</Popup>
+                  </Marker>
+                )}
+
+                {liveCreationPath.length > 0 && (
+                  <Polyline 
+                    positions={liveCreationPath}
+                    pathOptions={{
+                      color: '#00ffff',
+                      weight: 5,
+                      dashArray: '10, 10',
+                      opacity: 0.9
+                    }}
+                  />
+                )}
+              </>
+            )}
+
           </MapContainer>
 
-          {/* FLOATING ELEVATION POPUP CARD (MATCHING REFERENCE MOCKUP EXACTLY) */}
-          <div className="route-profile-popup-card">
-            <div className="profile-card-header">
-              <div className="title-group">
-                <span className="route-icon-badge">🗺️</span>
-                <div>
-                  <h3 className="profile-route-title">{selectedRide.title.toUpperCase()}</h3>
-                  <span className="profile-route-subtitle">{selectedRide.subtitle}</span>
+          {/* FLOATING ELEVATION POPUP CARD (WHEN NOT IN CREATION MODE) */}
+          {!isCreatingRoute && selectedRide && (
+            <div className="route-profile-popup-card">
+              <div className="profile-card-header">
+                <div className="title-group">
+                  <span className="route-icon-badge">🗺️</span>
+                  <div>
+                    <h3 className="profile-route-title">{selectedRide.title.toUpperCase()}</h3>
+                    <span className="profile-route-subtitle">{selectedRide.subtitle}</span>
+                  </div>
+                </div>
+                <button className="close-profile-btn" onClick={() => setSelectedRideId(null)}>
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div className="profile-stats-bar">
+                <div className="stat-pill">
+                  <Mountain size={14} color="#00d2ff" />
+                  <span>Elevación: <strong>{selectedRide.elevationDelta}</strong></span>
+                </div>
+                <div className="stat-pill difficulty-pill">
+                  <Flame size={14} color="#ff7a00" />
+                  <span>{selectedRide.difficulty}</span>
                 </div>
               </div>
-              <button className="close-profile-btn" onClick={() => setSelectedRideId(null)}>
-                <X size={16} />
-              </button>
-            </div>
 
-            <div className="profile-stats-bar">
-              <div className="stat-pill">
-                <Mountain size={14} color="#00d2ff" />
-                <span>Elevación: <strong>{selectedRide.elevationDelta}</strong></span>
+              {/* SVG MOUNTAIN ELEVATION GRAPH PROFILE */}
+              <div className="elevation-profile-graph">
+                <svg viewBox="0 0 300 80" className="elevation-svg">
+                  <defs>
+                    <linearGradient id="elevationGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#ffba00" stopOpacity="0.6" />
+                      <stop offset="100%" stopColor="#ffba00" stopOpacity="0.05" />
+                    </linearGradient>
+                  </defs>
+                  <path 
+                    d="M0,75 L0,55 Q30,20 60,45 T120,25 T180,50 T240,15 T300,60 L300,75 Z" 
+                    fill="url(#elevationGrad)" 
+                  />
+                  <path 
+                    d="M0,55 Q30,20 60,45 T120,25 T180,50 T240,15 T300,60" 
+                    fill="none" 
+                    stroke="#ffba00" 
+                    strokeWidth="2.5" 
+                  />
+                </svg>
+                <div className="graph-axis-labels">
+                  <span>0m</span>
+                  <span>20m</span>
+                  <span>40m</span>
+                  <span>60m</span>
+                  <span>100k</span>
+                </div>
               </div>
-              <div className="stat-pill difficulty-pill">
-                <Flame size={14} color="#ff7a00" />
-                <span>{selectedRide.difficulty}</span>
-              </div>
-            </div>
 
-            {/* SVG MOUNTAIN ELEVATION GRAPH PROFILE */}
-            <div className="elevation-profile-graph">
-              <svg viewBox="0 0 300 80" className="elevation-svg">
-                <defs>
-                  <linearGradient id="elevationGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#ffba00" stopOpacity="0.6" />
-                    <stop offset="100%" stopColor="#ffba00" stopOpacity="0.05" />
-                  </linearGradient>
-                </defs>
-                <path 
-                  d="M0,75 L0,55 Q30,20 60,45 T120,25 T180,50 T240,15 T300,60 L300,75 Z" 
-                  fill="url(#elevationGrad)" 
-                />
-                <path 
-                  d="M0,55 Q30,20 60,45 T120,25 T180,50 T240,15 T300,60" 
-                  fill="none" 
-                  stroke="#ffba00" 
-                  strokeWidth="2.5" 
-                />
-              </svg>
-              <div className="graph-axis-labels">
-                <span>0m</span>
-                <span>20m</span>
-                <span>40m</span>
-                <span>60m</span>
-                <span>100k</span>
+              <div className="profile-card-footer">
+                <span className="confirmed-label">Elevación confirmada</span>
+                <span className="dist-value">📏 {selectedRide.distance}</span>
               </div>
             </div>
-
-            <div className="profile-card-footer">
-              <span className="confirmed-label">Elevación confirmada</span>
-              <span className="dist-value">📏 {selectedRide.distance}</span>
-            </div>
-          </div>
+          )}
 
         </main>
       </div>
 
-      {/* CREATE RIDE MODAL FORM */}
-      {showCreateModal && (
+      {/* SAVE ROUTE MODAL FORM */}
+      {showSaveModal && (
         <div className="modal-backdrop">
           <div className="create-ride-modal">
             <div className="modal-header">
-              <h3>Crear Nueva Rodada</h3>
-              <button className="modal-close-btn" onClick={() => setShowCreateModal(false)}>
+              <h3>Guardar y Publicar Rodada</h3>
+              <button className="modal-close-btn" onClick={() => setShowSaveModal(false)}>
                 <X size={20} />
               </button>
             </div>
 
-            <form onSubmit={handleCreateSubmit} className="create-ride-form">
+            <form onSubmit={handleSaveRouteSubmit} className="create-ride-form">
               <div className="form-field">
-                <label>Nombre de la Ruta</label>
+                <label>Nombre de la Rodada</label>
                 <input 
                   type="text" 
                   required
-                  placeholder="Ej: Ruta de los Andes"
-                  value={newRide.title}
-                  onChange={(e) => setNewRide({...newRide, title: e.target.value})}
+                  placeholder="Ej: Ruta Transandina"
+                  value={saveForm.title}
+                  onChange={(e) => setSaveForm({...saveForm, title: e.target.value})}
                 />
+              </div>
+
+              <div className="calculated-summary-box">
+                <div><span>Distancia:</span> <strong>{calculatedDistance} km</strong></div>
+                <div><span>Desnivel:</span> <strong>{calculatedElevation} m</strong></div>
+                <div><span>Dificultad:</span> <strong>{suggestedDifficulty}</strong></div>
               </div>
 
               <div className="form-row">
                 <div className="form-field">
-                  <label>Fecha</label>
+                  <label>Fecha de la Rodada</label>
                   <input 
                     type="date" 
                     required
-                    value={newRide.date}
-                    onChange={(e) => setNewRide({...newRide, date: e.target.value})}
+                    value={saveForm.date}
+                    onChange={(e) => setSaveForm({...saveForm, date: e.target.value})}
                   />
                 </div>
                 <div className="form-field">
                   <label>Tipo de Rodada</label>
                   <select 
-                    value={newRide.type}
-                    onChange={(e) => setNewRide({...newRide, type: e.target.value})}
+                    value={saveForm.type}
+                    onChange={(e) => setSaveForm({...saveForm, type: e.target.value})}
                   >
                     <option value="Carretera">Carretera</option>
                     <option value="Off-road">Off-road</option>
@@ -531,35 +720,12 @@ const Rides = () => {
                 </div>
               </div>
 
-              <div className="form-row">
-                <div className="form-field">
-                  <label>Dificultad</label>
-                  <select 
-                    value={newRide.difficulty}
-                    onChange={(e) => setNewRide({...newRide, difficulty: e.target.value})}
-                  >
-                    <option value="Fácil">Fácil</option>
-                    <option value="Media">Media</option>
-                    <option value="Difícil">Difícil</option>
-                  </select>
-                </div>
-                <div className="form-field">
-                  <label>Distancia (km)</label>
-                  <input 
-                    type="text"
-                    placeholder="Ej: 120 km"
-                    value={newRide.distance}
-                    onChange={(e) => setNewRide({...newRide, distance: e.target.value})}
-                  />
-                </div>
-              </div>
-
               <div className="modal-actions">
-                <button type="button" className="btn-cancel" onClick={() => setShowCreateModal(false)}>
+                <button type="button" className="btn-cancel" onClick={() => setShowSaveModal(false)}>
                   Cancelar
                 </button>
                 <button type="submit" className="btn-submit-ride">
-                  Publicar Rodada
+                  Publicar en el Mapa
                 </button>
               </div>
             </form>
