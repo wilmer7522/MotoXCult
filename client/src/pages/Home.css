@@ -3,17 +3,22 @@
   background-color: var(--bg-dark);
 }
 
-/* HERO SECTION */
+/* HERO SECTION - 100% Full Bleed, No Box Dividing Line */
 .hero {
   position: relative;
-  width: 100%;
-  height: 82vh;
-  min-height: 560px;
-  max-height: 850px;
+  width: 100vw;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  height: clamp(520px, 60vw, 820px);
+  min-height: 520px;
+  max-height: 820px;
   overflow: hidden;
   display: flex;
   align-items: flex-start;
-  padding-top: 2.8rem;
+  padding-top: 1.5rem;
+  border-radius: 0;
 }
 
 .hero-bg {
@@ -25,9 +30,9 @@
   background-size: cover;
   background-position: center top;
   z-index: 1;
-  transition: transform 0.5s ease;
 }
 
+/* Smooth Gradient Overlay - Transparent Center, Soft Bottom Fade */
 .hero-overlay {
   position: absolute;
   top: 0;
@@ -37,19 +42,20 @@
   background: linear-gradient(
     180deg,
     rgba(14, 16, 18, 0.45) 0%,
-    rgba(14, 16, 18, 0.1) 40%,
-    rgba(14, 16, 18, 0.75) 75%,
-    rgba(14, 16, 18, 1) 100%
+    rgba(14, 16, 18, 0) 35%,
+    rgba(14, 16, 18, 0.6) 70%,
+    #0e1012 100%
   ),
   linear-gradient(
     90deg,
     rgba(14, 16, 18, 0.75) 0%,
-    rgba(14, 16, 18, 0.35) 45%,
-    rgba(14, 16, 18, 0) 100%
+    rgba(14, 16, 18, 0.25) 45%,
+    rgba(14, 16, 18, 0) 80%
   );
   z-index: 2;
 }
 
+/* HERO CONTAINER & VERY TOP-LEFT TITLE POSITIONING */
 .hero-container {
   position: relative;
   z-index: 3;
@@ -57,39 +63,43 @@
   justify-content: flex-start;
   align-items: flex-start;
   width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 5%;
 }
 
 .hero-content {
-  max-width: 680px;
-  padding-left: 1rem;
+  max-width: 750px;
+  margin-top: 0.5rem;
 }
 
+/* ENLARGED CRISP TITLE IN TOP-LEFT CORNER */
 .hero-title {
-  font-size: clamp(2.6rem, 5.5vw, 4.4rem);
+  font-size: clamp(3rem, 6vw, 4.8rem);
   font-weight: 900;
-  line-height: 1.05;
+  line-height: 1.02;
   color: #ffffff;
-  letter-spacing: -0.5px;
-  margin-bottom: 1.8rem;
-  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.95), 0 2px 10px rgba(0, 0, 0, 0.85);
+  letter-spacing: -1px;
+  margin-bottom: 2rem;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.95);
 }
 
 .hero-gradient-text {
-  background: linear-gradient(90deg, #ff7a00 0%, #ffba00 100%);
+  color: #ffaa00;
+  background: linear-gradient(90deg, #ff8c00 0%, #ffc800 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   display: inline-block;
   font-weight: 900;
-  filter: drop-shadow(0 2px 12px rgba(255, 122, 0, 0.6));
 }
 
 .hero-cta-btn {
   background: linear-gradient(90deg, #ff7a00 0%, #ffba00 100%);
   border: none;
   color: #0e1012;
-  font-size: 1.08rem;
+  font-size: 1.1rem;
   font-weight: 800;
-  padding: 16px 40px;
+  padding: 16px 42px;
   border-radius: 40px;
   cursor: pointer;
   box-shadow: 0 4px 25px rgba(255, 122, 0, 0.5);
@@ -101,10 +111,10 @@
   box-shadow: 0 8px 35px rgba(255, 122, 0, 0.75);
 }
 
-/* CONTENT SECTIONS & OVERLAP */
+/* CONTENT SECTIONS & OVERLAP OVER HERO BOTTOM FADE */
 .content-wrap {
   background-color: transparent;
-  margin-top: -110px;
+  margin-top: -120px;
   position: relative;
   z-index: 10;
   padding-bottom: 5rem;
@@ -311,11 +321,11 @@
   .hero {
     min-height: 420px;
     height: 95vh;
-    padding-top: 1.5rem;
+    padding-top: 1rem;
   }
 
   .hero-title {
-    font-size: 2rem;
+    font-size: 2.2rem;
     margin-bottom: 1rem;
   }
 
@@ -345,12 +355,12 @@
   .hero {
     min-height: 460px;
     height: 65vh;
-    padding-top: 2rem;
+    padding-top: 1rem;
   }
 
   .hero-content {
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
+    padding-left: 0.2rem;
+    padding-right: 0.2rem;
   }
 
   .hero-title {
