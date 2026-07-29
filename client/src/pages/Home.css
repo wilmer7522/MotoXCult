@@ -3,7 +3,7 @@
   background-color: var(--bg-dark);
 }
 
-/* HERO SECTION - 100% Full Bleed, Natural Uncropped Image */
+/* HERO SECTION - Explicit height bounds so container never collapses */
 .hero {
   position: relative;
   width: 100vw;
@@ -11,22 +11,26 @@
   right: 50%;
   margin-left: -50vw;
   margin-right: -50vw;
+  min-height: 580px;
+  height: clamp(580px, 60vw, 850px);
   overflow: hidden;
   border-radius: 0;
   background-color: #0e1012;
 }
 
 .hero-img-wrapper {
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  line-height: 0;
+  height: 100%;
 }
 
 .hero-full-img {
   width: 100%;
-  height: auto;
-  display: block;
-  object-fit: contain;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
 }
 
 /* Subtle Gradient Overlay for Text Readability */
@@ -40,7 +44,7 @@
     180deg,
     rgba(14, 16, 18, 0.45) 0%,
     rgba(14, 16, 18, 0) 35%,
-    rgba(14, 16, 18, 0.3) 75%,
+    rgba(14, 16, 18, 0.4) 75%,
     #0e1012 100%
   ),
   linear-gradient(
@@ -52,15 +56,13 @@
   z-index: 2;
 }
 
-/* HERO CONTAINER - Absolute Positioned on Top-Left Corner */
+/* HERO CONTAINER - Positioned on Top-Left Corner */
 .hero-container {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  position: relative;
   z-index: 3;
   width: 100%;
   max-width: 1400px;
+  margin: 0 auto;
   padding: 2.2rem 5% 0 5%;
 }
 
@@ -106,10 +108,10 @@
   box-shadow: 0 8px 35px rgba(255, 122, 0, 0.75);
 }
 
-/* CONTENT SECTIONS CLEANLY PLACED AFTER HERO */
+/* CONTENT SECTIONS OVERLAPPING OVER LOWER ROAD AREA */
 .content-wrap {
   background-color: transparent;
-  margin-top: -80px;
+  margin-top: -140px;
   position: relative;
   z-index: 10;
   padding-bottom: 5rem;
@@ -316,12 +318,13 @@
 
 /* RESPONSIVE MEDIA QUERIES */
 @media (max-width: 992px) {
-  .hero-container {
-    padding-top: 1rem;
+  .hero {
+    min-height: 480px;
+    height: 65vh;
   }
 
   .content-wrap {
-    margin-top: -40px;
+    margin-top: -100px;
   }
 
   .rodadas-grid,
@@ -332,8 +335,9 @@
 }
 
 @media (max-width: 600px) {
-  .hero-container {
-    padding-top: 0.8rem;
+  .hero {
+    min-height: 420px;
+    height: 60vh;
   }
 
   .hero-title {
@@ -351,7 +355,7 @@
   }
 
   .content-wrap {
-    margin-top: -20px;
+    margin-top: -60px;
   }
 
   .rodada-card {
