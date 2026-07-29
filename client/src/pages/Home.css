@@ -3,7 +3,7 @@
   background-color: var(--bg-dark);
 }
 
-/* HERO SECTION - Extended Highway Photo (Zero Cropping) */
+/* HERO SECTION - 100% Full Bleed, Straight Flat Top Edge */
 .hero {
   position: relative;
   width: 100vw;
@@ -13,22 +13,27 @@
   margin-right: -50vw;
   overflow: hidden;
   border-radius: 0;
+  background-color: #0e1012;
 }
 
 .hero-img-wrapper {
   position: relative;
   width: 100%;
   line-height: 0;
+  overflow: hidden;
 }
 
+/* Scale slightly by 3% so transparent PNG rounded corners are pushed outside overflow hidden */
 .hero-full-img {
   width: 100%;
   height: auto;
   display: block;
   object-fit: contain;
+  transform: scale(1.03);
+  transform-origin: center center;
 }
 
-/* Subtle Gradient Overlay for Text Readability & Smooth Bottom Transition */
+/* Smooth Overlay Gradient - Dark Top Left for Title, Soft Bottom Fade */
 .hero-overlay {
   position: absolute;
   top: 0;
@@ -38,20 +43,20 @@
   background: linear-gradient(
     180deg,
     rgba(14, 16, 18, 0.5) 0%,
-    rgba(14, 16, 18, 0) 30%,
-    rgba(14, 16, 18, 0.4) 75%,
+    rgba(14, 16, 18, 0) 35%,
+    rgba(14, 16, 18, 0.5) 75%,
     #0e1012 100%
   ),
   linear-gradient(
     90deg,
-    rgba(14, 16, 18, 0.7) 0%,
-    rgba(14, 16, 18, 0.2) 40%,
+    rgba(14, 16, 18, 0.75) 0%,
+    rgba(14, 16, 18, 0.3) 40%,
     rgba(14, 16, 18, 0) 80%
   );
   z-index: 2;
 }
 
-/* HERO CONTAINER & TOP-LEFT TITLE POSITIONING */
+/* HERO CONTAINER - Absolute Positioned on Top-Left Corner */
 .hero-container {
   position: absolute;
   top: 0;
@@ -60,7 +65,7 @@
   z-index: 3;
   width: 100%;
   max-width: 1400px;
-  padding: 2.2rem 5% 0 5%;
+  padding: 2rem 5% 0 5%;
 }
 
 .hero-content {
@@ -68,9 +73,9 @@
   margin-top: 0.5rem;
 }
 
-/* ENLARGED CRISP TITLE IN TOP-LEFT CORNER */
+/* ENLARGED CRISP TITLE IN TOP-LEFT CORNER WITH BRIGHT GOLDEN TEXT */
 .hero-title {
-  font-size: clamp(2.8rem, 5.8vw, 4.6rem);
+  font-size: clamp(3rem, 6vw, 4.8rem);
   font-weight: 900;
   line-height: 1.02;
   color: #ffffff;
@@ -79,13 +84,12 @@
   text-shadow: 0 4px 25px rgba(0, 0, 0, 0.95);
 }
 
+/* BRIGHT NEON GOLDEN ORANGE TEXT (NO MUDDY BROWN TRANSPARENT FILL TRICK) */
 .hero-gradient-text {
-  color: #ffaa00;
-  background: linear-gradient(90deg, #ff8c00 0%, #ffc800 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  display: inline-block;
+  color: #ffba00;
   font-weight: 900;
+  display: inline-block;
+  text-shadow: 0 0 25px rgba(255, 186, 0, 0.6), 0 3px 12px rgba(0, 0, 0, 0.95);
 }
 
 .hero-cta-btn {
@@ -106,10 +110,10 @@
   box-shadow: 0 8px 35px rgba(255, 122, 0, 0.75);
 }
 
-/* CONTENT SECTIONS PLACED OVER THE EXTENDED ROAD AREA */
+/* CONTENT SECTIONS PLACED DIRECTLY OVER THE ROAD AT BOTTOM OF HERO */
 .content-wrap {
   background-color: transparent;
-  margin-top: -36vw;
+  margin-top: -24vw;
   position: relative;
   z-index: 10;
   padding-bottom: 5rem;
@@ -117,7 +121,7 @@
 
 @media (min-width: 1600px) {
   .content-wrap {
-    margin-top: -460px;
+    margin-top: -320px;
   }
 }
 
@@ -327,7 +331,7 @@
   }
 
   .content-wrap {
-    margin-top: -22vw;
+    margin-top: -16vw;
   }
 
   .rodadas-grid,
@@ -357,7 +361,7 @@
   }
 
   .content-wrap {
-    margin-top: -12vw;
+    margin-top: -8vw;
   }
 
   .rodada-card {
