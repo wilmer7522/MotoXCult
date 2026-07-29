@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { Calendar, MessageSquare, Flame, Sun, Palmtree } from 'lucide-react';
+import heroImage from '/assets/hero_biker_extended_road.png';
 import './Home.css';
 
 const Home = () => {
@@ -11,10 +12,10 @@ const Home = () => {
 
   return (
     <div className="home-page">
-      {/* HERO SECTION - UNCROPPED FULL NATURAL IMAGE */}
+      {/* HERO SECTION - UNCROPPED FULL EXTENDED ROAD IMAGE */}
       <section className="hero full-bleed">
         <div className="hero-img-wrapper">
-          <img src="/assets/hero_biker_extended_road.png" alt="MOTO X CULT Portada" className="hero-full-img" />
+          <img src={heroImage} alt="MOTO X CULT Portada" className="hero-full-img" />
           <div className="hero-overlay"></div>
         </div>
         
