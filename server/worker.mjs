@@ -892,7 +892,7 @@ export default {
         if (!authUser) return resError('No autorizado', 401, corsHeaders);
 
         const clubId = parseInt(path.split('/api/clubs/')[1].split('/request-join')[0]);
-        const club = await db.prepare('SELECT id, name FROM Club WHERE id = ?').bind(clubId).first();
+        const club = await db.prepare('SELECT id, name, leaderId FROM Club WHERE id = ?').bind(clubId).first();
 
         if (!club) return resError('Moto Club no encontrado', 404, corsHeaders);
 
@@ -902,6 +902,23 @@ export default {
           VALUES (?, ?, 'PENDING', ?) 
           ON CONFLICT(clubId, userId) DO UPDATE SET status = 'PENDING', createdAt = ?
         `).bind(clubId, authUser.id, now, now).run();
+
+        // Send real-time notification to Club Owner / Leader
+        if (club.leaderId && club.leaderId !== authUser.id) {
+          const applicantUser = await db.prepare('SELECT name, email FROM User WHERE id = ?').bind(authUser.id).first();
+          const applicantName = applicantUser ? (applicantUser.name || applicantUser.email) : 'Un motero';
+
+          await db.prepare(`
+            INSERT INTO Notification (userId, icon, title, message, link, type, relatedId, unread, createdAt)
+            VALUES (?, '📩', 'Nueva Solicitud de Ingreso', ?, ?, 'CLUB_REQUEST', ?, 1, ?)
+          `).bind(
+            club.leaderId,
+            `${applicantName} ha solicitado unirse a tu Moto Club "${club.name}".`,
+            `/clubs/${club.id}`,
+            club.id,
+            now
+          ).run();
+        }
 
         return new Response(JSON.stringify({ message: 'Solicitud de ingreso enviada al líder del club con éxito' }), { headers: corsHeaders });
       }
@@ -924,7 +941,20 @@ export default {
         if (!joinReq) return resError('Solicitud no encontrada', 404, corsHeaders);
 
         await db.prepare('UPDATE ClubJoinRequest SET status = "APPROVED" WHERE id = ?').bind(requestId).run();
-        await db.prepare('UPDATE User SET club = ? WHERE id = ?').bind(club.name, joinReq.userId).run();
+        await db.prepare('UPDATE User SET club = ?, clubRole = "Miembro Oficial" WHERE id = ?').bind(club.name, joinReq.userId).run();
+
+        // Send notification to applicant user
+        const now = new Date().toISOString();
+        await db.prepare(`
+          INSERT INTO Notification (userId, icon, title, message, link, type, relatedId, unread, createdAt)
+          VALUES (?, '🎉', '¡Solicitud Aprobada!', ?, ?, 'CLUB_APPROVED', ?, 1, ?)
+        `).bind(
+          joinReq.userId,
+          `¡Tu solicitud para unirte al Moto Club "${club.name}" ha sido aprobada por el líder!`,
+          `/clubs/${club.id}`,
+          club.id,
+          now
+        ).run();
 
         return new Response(JSON.stringify({ message: 'Usuario aprobado e integrado al Moto Club con éxito' }), { headers: corsHeaders });
       }
@@ -943,7 +973,23 @@ export default {
           return resError('No estás autorizado para gestionar este club', 403, corsHeaders);
         }
 
+        const joinReq = await db.prepare('SELECT * FROM ClubJoinRequest WHERE id = ?').bind(requestId).first();
+        if (!joinReq) return resError('Solicitud no encontrada', 404, corsHeaders);
+
         await db.prepare('UPDATE ClubJoinRequest SET status = "REJECTED" WHERE id = ?').bind(requestId).run();
+
+        // Send notification to applicant user
+        const now = new Date().toISOString();
+        await db.prepare(`
+          INSERT INTO Notification (userId, icon, title, message, link, type, relatedId, unread, createdAt)
+          VALUES (?, '❌', 'Solicitud Rechazada', ?, ?, 'CLUB_REJECTED', ?, 1, ?)
+        `).bind(
+          joinReq.userId,
+          `Tu solicitud para unirte al Moto Club "${club.name}" ha sido rechazada.`,
+          `/clubs`,
+          club.id,
+          now
+        ).run();
 
         return new Response(JSON.stringify({ message: 'Solicitud de ingreso rechazada' }), { headers: corsHeaders });
       }
