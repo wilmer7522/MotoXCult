@@ -952,11 +952,61 @@ export default {
         const authUser = getAuthUser(request, env);
         if (!authUser) return resError('No autorizado', 401, corsHeaders);
 
-        const notifications = await db.prepare(
+        let notifications = await db.prepare(
           'SELECT * FROM Notification WHERE userId = ? ORDER BY createdAt DESC LIMIT 50'
         ).bind(authUser.id).all();
 
-        return new Response(JSON.stringify(notifications.results || []), { headers: corsHeaders });
+        let list = notifications ? (notifications.results || []) : [];
+
+        if (list.length === 0) {
+          const defaultNotifs = [
+            {
+              userId: authUser.id,
+              icon: '🏍️',
+              title: '¡Bienvenido a MotoXCult!',
+              message: 'Tu cuenta de motero está activa. Explora rodadas, clubes y el garaje.',
+              link: '/rides',
+              type: 'SYSTEM',
+              unread: 1,
+              createdAt: new Date().toISOString()
+            },
+            {
+              userId: authUser.id,
+              icon: '📍',
+              title: 'Rodada Recomendada: Ruta Cúcuta - San Antonio',
+              message: 'Nueva rodada internacional disponible con trazado GPS en vivo.',
+              link: '/rides',
+              type: 'RIDE',
+              unread: 1,
+              createdAt: new Date(Date.now() - 3600000).toISOString()
+            },
+            {
+              userId: authUser.id,
+              icon: '👑',
+              title: "Moto Club GAIA'S BIKERS",
+              message: 'Comunidad oficial registrada en la plataforma MotoXCult.',
+              link: '/clubs/1',
+              type: 'CLUB',
+              unread: 1,
+              createdAt: new Date(Date.now() - 7200000).toISOString()
+            }
+          ];
+
+          for (const n of defaultNotifs) {
+            try {
+              await db.prepare(
+                'INSERT INTO Notification (userId, icon, title, message, link, type, unread, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+              ).bind(n.userId, n.icon, n.title, n.message, n.link, n.type, n.unread, n.createdAt).run();
+            } catch(e) {}
+          }
+
+          const freshNotifs = await db.prepare(
+            'SELECT * FROM Notification WHERE userId = ? ORDER BY createdAt DESC LIMIT 50'
+          ).bind(authUser.id).all();
+          list = freshNotifs ? (freshNotifs.results || []) : defaultNotifs;
+        }
+
+        return new Response(JSON.stringify(list), { headers: corsHeaders });
       }
 
       // Notifications: Mark as Read (/api/notifications/:id/read)

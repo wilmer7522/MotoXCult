@@ -200,7 +200,7 @@
 .notifications-dropdown {
   position: absolute;
   top: calc(100% + 12px);
-  right: 5%;
+  right: 0;
   width: 340px;
   background: #0f172a;
   border: 1px solid rgba(255, 140, 0, 0.4);
