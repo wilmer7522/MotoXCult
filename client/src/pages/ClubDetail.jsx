@@ -437,9 +437,30 @@ const ClubDetail = () => {
     try {
       const token = localStorage.getItem('token');
       const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-      const res = await fetch(`${API_URL}/api/clubs/${id}`, { headers });
-      const data = await res.json();
-      if (res.ok) {
+
+      const clubEndpoints = [
+        `${API_URL}/api/clubs/${id}`,
+        `https://motoxcult-api.wilmer7522.workers.dev/api/clubs/${id}`
+      ];
+
+      let data = null;
+      let resOk = false;
+
+      for (const endpoint of clubEndpoints) {
+        try {
+          const res = await fetch(endpoint, { headers });
+          const contentType = res.headers.get('content-type') || '';
+          if (res.ok && contentType.includes('application/json')) {
+            data = await res.json();
+            resOk = true;
+            break;
+          }
+        } catch(e) {
+          console.warn('Club fetch retry:', endpoint, e);
+        }
+      }
+
+      if (resOk && data) {
         setClub(data);
         setUserJoinStatus(data.userJoinStatus || 'NONE');
         setPendingRequests(data.pendingJoinRequests || []);

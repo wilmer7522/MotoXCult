@@ -199,30 +199,39 @@ const Profile = () => {
         });
       }
 
-      // Update profile data
-      const res = await fetch(`${API_URL}/api/users/profile`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ ...editData, avatar: currentAvatarUrl })
-      });
-      
-      let data = {};
-      const contentType = res.headers.get('content-type') || '';
-      if (contentType.includes('application/json')) {
-        data = await res.json();
-      } else {
-        const textData = await res.text();
+      const profileEndpoints = [
+        `${API_URL}/api/users/profile`,
+        `${API_URL}/api/users/me`,
+        `https://motoxcult-api.wilmer7522.workers.dev/api/users/profile`,
+        `https://motoxcult-api.wilmer7522.workers.dev/api/users/me`
+      ];
+
+      let data = null;
+      let resOk = false;
+
+      for (const endpoint of profileEndpoints) {
         try {
-          data = JSON.parse(textData);
-        } catch(err) {
-          data = { message: textData || 'Error en el servidor' };
+          const res = await fetch(endpoint, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ ...editData, avatar: currentAvatarUrl })
+          });
+
+          const contentType = res.headers.get('content-type') || '';
+          if (res.ok && contentType.includes('application/json')) {
+            data = await res.json();
+            resOk = true;
+            break;
+          }
+        } catch(e) {
+          console.warn('Endpoint retry failed:', endpoint, e);
         }
       }
 
-      if (res.ok) {
+      if (resOk && data) {
         const rawDate = data.birthDate || data.birthdate || editData.birthDate || '';
         const updatedDate = rawDate ? rawDate.split('T')[0] : '';
         const newSavedData = { 
@@ -239,7 +248,7 @@ const Profile = () => {
         setAvatarFile(null);
         setAvatarPreview(null);
       } else {
-        setMessage({ type: 'error', text: data.message || t.profile.error });
+        setMessage({ type: 'error', text: 'Error al actualizar el perfil. Por favor intenta de nuevo.' });
       }
     } catch (err) {
       console.error('Error saving profile:', err);
