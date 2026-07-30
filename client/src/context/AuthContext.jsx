@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { API_URL } from '../config';
 
 const AuthContext = createContext();
 
@@ -11,29 +12,35 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem('token');
     if (savedUser && token) {
       try {
-        const parsed = JSON.parse(savedUser);
-        setUser(parsed);
-      } catch (e) {
-        console.error("Error parsing user from localStorage:", e);
-      }
+        setUser(JSON.parse(savedUser));
+      } catch (e) {}
+
+      fetch(`${API_URL}/api/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => {
+          if (res.ok) return res.json();
+          throw new Error('Token expirado o no válido');
+        })
+        .then(freshUser => {
+          if (freshUser && freshUser.email) {
+            localStorage.setItem('user', JSON.stringify(freshUser));
+            setUser(freshUser);
+          }
+        })
+        .catch(err => {
+          console.error('Error sincronizando sesión:', err);
+        })
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   const login = (userData, token) => {
-    const userToSave = {
-      role: 'ADMIN',
-      club: 'Moto Club Cúcuta High Speed',
-      isSubscriptionActive: 1,
-      selectedPlan: 'annual',
-      subscriptionExpiresAt: '2027-12-31T23:59:59.000Z',
-      ...userData
-    };
-    const validToken = token || 'mock_jwt_token_2026_motoxcult';
-
-    localStorage.setItem('user', JSON.stringify(userToSave));
-    localStorage.setItem('token', validToken);
-    setUser(userToSave);
+    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('token', token);
+    setUser(userData);
   };
 
   const logout = () => {
