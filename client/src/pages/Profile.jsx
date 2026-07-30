@@ -191,6 +191,14 @@ const Profile = () => {
       const token = localStorage.getItem('token');
       let currentAvatarUrl = editData.avatar;
 
+      if (avatarFile) {
+        const reader = new FileReader();
+        currentAvatarUrl = await new Promise((resolve) => {
+          reader.onload = (e) => resolve(e.target.result);
+          reader.readAsDataURL(avatarFile);
+        });
+      }
+
       // Update profile data
       const res = await fetch(`${API_URL}/api/users/profile`, {
         method: 'PUT',
@@ -201,7 +209,19 @@ const Profile = () => {
         body: JSON.stringify({ ...editData, avatar: currentAvatarUrl })
       });
       
-      const data = await res.json();
+      let data = {};
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        data = await res.json();
+      } else {
+        const textData = await res.text();
+        try {
+          data = JSON.parse(textData);
+        } catch(err) {
+          data = { message: textData || 'Error en el servidor' };
+        }
+      }
+
       if (res.ok) {
         const rawDate = data.birthDate || data.birthdate || editData.birthDate || '';
         const updatedDate = rawDate ? rawDate.split('T')[0] : '';
@@ -210,10 +230,10 @@ const Profile = () => {
           name: data.name || editData.name,
           email: data.email || editData.email || user?.email,
           birthDate: updatedDate, 
-          avatar: currentAvatarUrl 
+          avatar: data.avatar || currentAvatarUrl 
         };
         setFormData(newSavedData);
-        login(data, token);
+        login({ ...user, ...newSavedData }, token);
         setMessage({ type: 'success', text: t.profile.success });
         setIsEditing(false);
         setAvatarFile(null);
@@ -222,6 +242,7 @@ const Profile = () => {
         setMessage({ type: 'error', text: data.message || t.profile.error });
       }
     } catch (err) {
+      console.error('Error saving profile:', err);
       setMessage({ type: 'error', text: err.message || t.profile.error });
     } finally {
       setLoading(false);
