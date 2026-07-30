@@ -4,7 +4,7 @@ import {
   Search, SlidersHorizontal, Plus, Calendar, MapPin, 
   Mountain, Flame, Users, X, ChevronDown, Check, Compass, Gauge,
   Navigation, CheckCircle2, RotateCcw, ArrowRight, Target, Map, RotateCw,
-  Globe, Lock, ShieldCheck, UserCheck, Edit3, Trash2, AlertTriangle, Bell
+  Globe, Lock, ShieldCheck, UserCheck, Edit3, Trash2, AlertTriangle, Bell, RefreshCw
 } from 'lucide-react';
 import { MapContainer, TileLayer, Polyline, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
@@ -12,6 +12,88 @@ import './Rides.css';
 
 // Real road polyline coordinates for Cúcuta -> San Antonio del Táchira (349 exact turn-by-turn road points)
 const REAL_CUCUTA_SAN_ANTONIO_PATH = [[7.893516,-72.507726],[7.893602,-72.507272],[7.894064,-72.507355],[7.894612,-72.507463],[7.895072,-72.507564],[7.895592,-72.507606],[7.895659,-72.507244],[7.895775,-72.506613],[7.895795,-72.506496],[7.895016,-72.505374],[7.894982,-72.505328],[7.894573,-72.504743],[7.894508,-72.504652],[7.894475,-72.50461],[7.894436,-72.50455],[7.894155,-72.50413],[7.893382,-72.50297],[7.893276,-72.502811],[7.893045,-72.502465],[7.89291,-72.502262],[7.892531,-72.501694],[7.891746,-72.500549],[7.891697,-72.500463],[7.890873,-72.499246],[7.89064,-72.498905],[7.890596,-72.498829],[7.890058,-72.49806],[7.889258,-72.496892],[7.889156,-72.496748],[7.889092,-72.496658],[7.889081,-72.496638],[7.889058,-72.496609],[7.889038,-72.496593],[7.888844,-72.496502],[7.888824,-72.496489],[7.888787,-72.496459],[7.888757,-72.496429],[7.888729,-72.496396],[7.888696,-72.496349],[7.888668,-72.496304],[7.88836,-72.495718],[7.888303,-72.495608],[7.888083,-72.495216],[7.888032,-72.495124],[7.888014,-72.495095],[7.887601,-72.494452],[7.887566,-72.494404],[7.886705,-72.493096],[7.886477,-72.492759],[7.886195,-72.492352],[7.885986,-72.492042],[7.885455,-72.491279],[7.88532,-72.491085],[7.884378,-72.489696],[7.884209,-72.489446],[7.884024,-72.489166],[7.883801,-72.488823],[7.883195,-72.487917],[7.882828,-72.487386],[7.882749,-72.487278],[7.88265,-72.487168],[7.882549,-72.487083],[7.882453,-72.487016],[7.882332,-72.486956],[7.882208,-72.486913],[7.882074,-72.48689],[7.881956,-72.486882],[7.881834,-72.486886],[7.88168,-72.486908],[7.881533,-72.486954],[7.881148,-72.487131],[7.880772,-72.487299],[7.880679,-72.487343],[7.879775,-72.487739],[7.879014,-72.488067],[7.878766,-72.488184],[7.878672,-72.48823],[7.878571,-72.488273],[7.878486,-72.488308],[7.878419,-72.488329],[7.878326,-72.488356],[7.878207,-72.488383],[7.878106,-72.4884],[7.877965,-72.488418],[7.877823,-72.488431],[7.877697,-72.488437],[7.877503,-72.488438],[7.877357,-72.488429],[7.87725,-72.488418],[7.877165,-72.488405],[7.877038,-72.48838],[7.876788,-72.488321],[7.876358,-72.488214],[7.876071,-72.488147],[7.875856,-72.488091],[7.875624,-72.488021],[7.875422,-72.487951],[7.875321,-72.487916],[7.875236,-72.48789],[7.875125,-72.487863],[7.875019,-72.487841],[7.874902,-72.487825],[7.8748,-72.487814],[7.874621,-72.487805],[7.874453,-72.487796],[7.874333,-72.487794],[7.874073,-72.487804],[7.873843,-72.48782],[7.873385,-72.48786],[7.872917,-72.487916],[7.872739,-72.487938],[7.87263,-72.487949],[7.872532,-72.487951],[7.872455,-72.487949],[7.872362,-72.487941],[7.872278,-72.487923],[7.872186,-72.487903],[7.871831,-72.487791],[7.871703,-72.487743],[7.871627,-72.487712],[7.871541,-72.487667],[7.871433,-72.487602],[7.87134,-72.487541],[7.871236,-72.487463],[7.871147,-72.48739],[7.870428,-72.486779],[7.870321,-72.486692],[7.870243,-72.486628],[7.870164,-72.486567],[7.870102,-72.486521],[7.870047,-72.486483],[7.870005,-72.486458],[7.86992,-72.486414],[7.869852,-72.486384],[7.869771,-72.486351],[7.869669,-72.486315],[7.869598,-72.486292],[7.869515,-72.486263],[7.869445,-72.486241],[7.869372,-72.486215],[7.869311,-72.486186],[7.869258,-72.48616],[7.869202,-72.486126],[7.869154,-72.486095],[7.869084,-72.486035],[7.868858,-72.485851],[7.868691,-72.485712],[7.867998,-72.485128],[7.867256,-72.484472],[7.866546,-72.483811],[7.866397,-72.483658],[7.866113,-72.483361],[7.865997,-72.483244],[7.86591,-72.483169],[7.865823,-72.483102],[7.865749,-72.483046],[7.865035,-72.482555],[7.864884,-72.482445],[7.864464,-72.482172],[7.863757,-72.481712],[7.86365,-72.48164],[7.863541,-72.481558],[7.863414,-72.481478],[7.862315,-72.480749],[7.862225,-72.48069],[7.861971,-72.480522],[7.861907,-72.480479],[7.860956,-72.479834],[7.860877,-72.479776],[7.860178,-72.479305],[7.859862,-72.479105],[7.859377,-72.478755],[7.859318,-72.478716],[7.858722,-72.478319],[7.858403,-72.478097],[7.857909,-72.47774],[7.85772,-72.477614],[7.85708,-72.477183],[7.857,-72.47713],[7.856888,-72.477052],[7.856769,-72.476964],[7.856653,-72.476892],[7.855654,-72.47621],[7.85548,-72.476094],[7.854505,-72.475444],[7.854241,-72.475269],[7.853937,-72.475059],[7.852618,-72.47415],[7.852419,-72.474017],[7.85193,-72.47369],[7.851308,-72.47326],[7.850683,-72.472836],[7.85016,-72.472481],[7.849896,-72.472306],[7.849847,-72.472274],[7.84983,-72.472262],[7.849601,-72.472108],[7.84798,-72.471018],[7.846964,-72.470335],[7.845906,-72.469623],[7.844914,-72.468964],[7.844888,-72.468944],[7.844576,-72.468728],[7.844541,-72.468707],[7.843616,-72.468054],[7.841447,-72.466591],[7.841018,-72.466313],[7.840473,-72.465936],[7.839768,-72.465434],[7.839617,-72.465332],[7.839487,-72.465248],[7.839325,-72.46515],[7.839192,-72.465075],[7.839078,-72.465012],[7.83996,-72.464967],[7.838389,-72.464709],[7.838081,-72.464589],[7.837901,-72.464515],[7.837781,-72.464465],[7.837692,-72.464429],[7.837595,-72.46439],[7.837549,-72.464372],[7.837344,-72.464291],[7.837113,-72.4642],[7.835936,-72.463695],[7.835557,-72.463535],[7.835173,-72.463379],[7.834711,-72.463204],[7.834625,-72.463182],[7.834595,-72.463175],[7.834096,-72.463055],[7.834051,-72.463045],[7.833969,-72.463031],[7.833903,-72.463023],[7.83383,-72.463014],[7.833748,-72.463006],[7.833632,-72.462998],[7.833529,-72.462994],[7.833402,-72.462994],[7.833292,-72.462997],[7.833042,-72.463001],[7.832699,-72.463012],[7.831976,-72.463033],[7.831548,-72.463049],[7.831228,-72.463068],[7.830633,-72.46309],[7.829931,-72.463129],[7.829889,-72.463133],[7.829151,-72.463178],[7.828413,-72.463208],[7.827758,-72.463217],[7.827646,-72.463213],[7.827568,-72.463207],[7.827502,-72.463193],[7.827426,-72.463181],[7.827337,-72.46316],[7.827223,-72.463127],[7.827091,-72.463081],[7.826762,-72.46296],[7.825697,-72.462561],[7.825639,-72.462536],[7.82554,-72.462483],[7.825458,-72.462443],[7.825129,-72.462259],[7.82496,-72.462115],[7.824848,-72.462013],[7.824727,-72.461867],[7.82463,-72.46172],[7.824555,-72.461605],[7.824488,-72.461499],[7.824425,-72.461388],[7.824362,-72.461265],[7.824316,-72.461153],[7.824278,-72.461058],[7.824241,-72.460953],[7.824167,-72.460715],[7.824094,-72.460452],[7.824027,-72.460208],[7.823906,-72.459769],[7.823827,-72.459485],[7.823747,-72.459212],[7.823669,-72.45893],[7.823604,-72.458706],[7.823569,-72.458599],[7.823528,-72.458491],[7.823487,-72.458388],[7.82344,-72.458287],[7.823367,-72.458147],[7.823321,-72.458057],[7.823278,-72.457986],[7.823217,-72.457889],[7.82314,-72.457774],[7.82304,-72.45763],[7.822959,-72.45753],[7.822878,-72.457436],[7.82278,-72.457334],[7.822688,-72.457247],[7.822615,-72.457181],[7.822349,-72.45696],[7.822024,-72.456682],[7.821902,-72.456577],[7.821734,-72.456433],[7.821353,-72.4561],[7.821046,-72.455852],[7.820766,-72.455606],[7.819794,-72.454793],[7.819289,-72.454346],[7.819073,-72.454142],[7.818812,-72.453862],[7.81872,-72.453746],[7.818697,-72.45371],[7.818673,-72.453671],[7.818617,-72.453555],[7.818568,-72.453436],[7.818527,-72.453314],[7.818494,-72.453189],[7.818468,-72.453063],[7.818451,-72.452935],[7.818442,-72.452806],[7.818271,-72.452187],[7.817561,-72.449548],[7.817522,-72.449441],[7.817473,-72.449287],[7.817436,-72.44911],[7.817418,-72.449024],[7.817409,-72.448939],[7.817407,-72.448752],[7.817397,-72.448735],[7.817391,-72.448715],[7.81739,-72.448695],[7.817396,-72.448667],[7.81741,-72.448643],[7.817431,-72.448624],[7.81745,-72.448457],[7.817456,-72.448388],[7.817471,-72.448128],[7.817482,-72.447967],[7.817523,-72.44757],[7.817545,-72.447329],[7.817592,-72.446699],[7.817664,-72.445929],[7.81768,-72.445719],[7.817726,-72.445083],[7.817771,-72.444461],[7.817023,-72.444348],[7.816361,-72.444269],[7.816446,-72.443275],[7.816608,-72.443286],[7.816701,-72.443293]];
+
+// Initial Default Sample Rides
+const INITIAL_DEFAULT_RIDES = [
+  {
+    id: 1,
+    title: 'Ruta Cúcuta - San Antonio',
+    subtitle: '(Frontera Andina)',
+    country: '🇨🇴 Colombia / 🇻🇪 Venezuela',
+    location: 'Cúcuta, Norte de Santander',
+    date: '15 de Mayo, 2026',
+    isoDate: '2026-05-15',
+    type: 'Carretera',
+    difficulty: 'Media',
+    privacy: 'public',
+    clubName: '',
+    elevationDelta: '133m',
+    distance: '12.8 km',
+    attendees: 193,
+    isAttending: true,
+    center: [7.855, -72.475],
+    zoom: 13,
+    path: REAL_CUCUTA_SAN_ANTONIO_PATH,
+    waypoints: [
+      { lat: 7.893516, lng: -72.507726, name: '🟢 Cúcuta Partida', type: 'view' },
+      { lat: 7.816701, lng: -72.443293, name: '🔴 San Antonio Llegada', type: 'food' }
+    ]
+  },
+  {
+    id: 2,
+    title: 'Ruta del Café',
+    subtitle: '(Circuito Valles)',
+    country: '🇨🇴 Colombia',
+    location: 'Manizales, Caldas',
+    date: '15 de Junio, 2026',
+    isoDate: '2026-06-15',
+    type: 'Mixta',
+    difficulty: 'Media',
+    privacy: 'private',
+    clubName: 'Moto Club Cúcuta High Speed',
+    elevationDelta: '450m',
+    distance: '85.0 km',
+    attendees: 133,
+    isAttending: false,
+    center: [4.810, -74.120],
+    zoom: 12,
+    path: [
+      [4.850, -74.180], [4.870, -74.140], [4.840, -74.080],
+      [4.780, -74.090], [4.760, -74.150], [4.800, -74.190], [4.850, -74.180]
+    ],
+    waypoints: [
+      { lat: 4.870, lng: -74.140, name: '🟢 Finca El Cafetal', type: 'view' },
+      { lat: 4.840, lng: -74.080, name: '🔴 Estación de Gasolina', type: 'fuel' }
+    ]
+  },
+  {
+    id: 3,
+    title: 'Vuelta a la Costa',
+    subtitle: '(Travesía Marítima)',
+    country: '🇨🇴 Colombia',
+    location: 'Santa Marta, Magdalena',
+    date: '01 de Julio, 2026',
+    isoDate: '2026-07-01',
+    type: 'Off-road',
+    difficulty: 'Fácil',
+    privacy: 'public',
+    clubName: '',
+    elevationDelta: '120m',
+    distance: '150.0 km',
+    attendees: 248,
+    isAttending: false,
+    center: [4.580, -74.150],
+    zoom: 11,
+    path: [
+      [4.620, -74.220], [4.650, -74.150], [4.610, -74.080],
+      [4.540, -74.110], [4.510, -74.190], [4.560, -74.240], [4.620, -74.220]
+    ],
+    waypoints: [
+      { lat: 4.620, lng: -74.220, name: '🟢 Mirador de la Costa', type: 'view' },
+      { lat: 4.560, lng: -74.240, name: '🔴 Bahia del Mar', type: 'food' }
+    ]
+  }
+];
 
 // Fix Leaflet Default Marker Assets
 delete L.Icon.Default.prototype._getIconUrl;
@@ -107,87 +189,42 @@ const Rides = () => {
   const [searchQueryPicker, setSearchQueryPicker] = useState('');
   const [isSearchingGeocode, setIsSearchingGeocode] = useState(false);
 
-  // Sample Rides Data with Country, City Location, and RSVP Attendance State
-  const [ridesList, setRidesList] = useState([
-    {
-      id: 1,
-      title: 'Ruta Cúcuta - San Antonio',
-      subtitle: '(Frontera Andina)',
-      country: '🇨🇴 Colombia / 🇻🇪 Venezuela',
-      location: 'Cúcuta, Norte de Santander',
-      date: '15 de Mayo, 2026',
-      isoDate: '2026-05-15',
-      type: 'Carretera',
-      difficulty: 'Media',
-      privacy: 'public',
-      clubName: '',
-      elevationDelta: '133m',
-      distance: '12.8 km',
-      attendees: 193,
-      isAttending: true,
-      center: [7.855, -72.475],
-      zoom: 13,
-      path: REAL_CUCUTA_SAN_ANTONIO_PATH,
-      waypoints: [
-        { lat: 7.893516, lng: -72.507726, name: '🟢 Cúcuta Partida', type: 'view' },
-        { lat: 7.816701, lng: -72.443293, name: '🔴 San Antonio Llegada', type: 'food' }
-      ]
-    },
-    {
-      id: 2,
-      title: 'Ruta del Café',
-      subtitle: '(Circuito Valles)',
-      country: '🇨🇴 Colombia',
-      location: 'Manizales, Caldas',
-      date: '15 de Junio, 2026',
-      isoDate: '2026-06-15',
-      type: 'Mixta',
-      difficulty: 'Media',
-      privacy: 'private',
-      clubName: 'Moto Club Cúcuta High Speed',
-      elevationDelta: '450m',
-      distance: '85.0 km',
-      attendees: 133,
-      isAttending: false,
-      center: [4.810, -74.120],
-      zoom: 12,
-      path: [
-        [4.850, -74.180], [4.870, -74.140], [4.840, -74.080],
-        [4.780, -74.090], [4.760, -74.150], [4.800, -74.190], [4.850, -74.180]
-      ],
-      waypoints: [
-        { lat: 4.870, lng: -74.140, name: '🟢 Finca El Cafetal', type: 'view' },
-        { lat: 4.840, lng: -74.080, name: '🔴 Estación de Gasolina', type: 'fuel' }
-      ]
-    },
-    {
-      id: 3,
-      title: 'Vuelta a la Costa',
-      subtitle: '(Travesía Marítima)',
-      country: '🇨🇴 Colombia',
-      location: 'Santa Marta, Magdalena',
-      date: '01 de Julio, 2026',
-      isoDate: '2026-07-01',
-      type: 'Off-road',
-      difficulty: 'Fácil',
-      privacy: 'public',
-      clubName: '',
-      elevationDelta: '120m',
-      distance: '150.0 km',
-      attendees: 248,
-      isAttending: false,
-      center: [4.580, -74.150],
-      zoom: 11,
-      path: [
-        [4.620, -74.220], [4.650, -74.150], [4.610, -74.080],
-        [4.540, -74.110], [4.510, -74.190], [4.560, -74.240], [4.620, -74.220]
-      ],
-      waypoints: [
-        { lat: 4.620, lng: -74.220, name: '🟢 Mirador de la Costa', type: 'view' },
-        { lat: 4.560, lng: -74.240, name: '🔴 Bahia del Mar', type: 'food' }
-      ]
+  // Persistent Rides Data from localStorage with Fallback Recovery
+  const [ridesList, setRidesList] = useState(() => {
+    try {
+      const saved = localStorage.getItem('motoxcult_rides_list');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.error("Error reading rides from localStorage:", e);
     }
-  ]);
+    return INITIAL_DEFAULT_RIDES;
+  });
+
+  // Automatically persist ridesList changes to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('motoxcult_rides_list', JSON.stringify(ridesList));
+    } catch (e) {
+      console.error("Error saving rides to localStorage:", e);
+    }
+  }, [ridesList]);
+
+  // Restore Default Rides if needed
+  const handleRestoreDefaultRides = () => {
+    setRidesList(INITIAL_DEFAULT_RIDES);
+    setSelectedRideId(1);
+    handleResetFilters();
+    try {
+      localStorage.setItem('motoxcult_rides_list', JSON.stringify(INITIAL_DEFAULT_RIDES));
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   // Comprehensive Filtering Logic
   const filteredRides = ridesList.filter(ride => {
@@ -229,18 +266,6 @@ const Rides = () => {
   // Sync category, difficulty, distance slider & date fields when selecting a ride card
   const handleSelectRideCard = (ride) => {
     setSelectedRideId(ride.id);
-    if (ride.type) {
-      setSelectedCategory(ride.type);
-    }
-    if (ride.difficulty) {
-      setSelectedDifficulty(ride.difficulty);
-    }
-    const numDist = Math.ceil(parseFloat(ride.distance.replace(/[^0-9.]/g, ''))) || 50;
-    setDistanceMax(Math.max(numDist, 15));
-    if (ride.isoDate) {
-      setFilterStartDate(ride.isoDate);
-      setFilterEndDate(ride.isoDate);
-    }
   };
 
   // Toggle RSVP Attendance
@@ -297,10 +322,10 @@ const Rides = () => {
   const confirmDeleteRide = () => {
     if (!rideToDelete) return;
     const updatedList = ridesList.filter(r => r.id !== rideToDelete.id);
-    setRidesList(updatedList);
+    setRidesList(updatedList.length > 0 ? updatedList : INITIAL_DEFAULT_RIDES);
 
     if (selectedRideId === rideToDelete.id) {
-      setSelectedRideId(updatedList.length > 0 ? updatedList[0].id : null);
+      setSelectedRideId(updatedList.length > 0 ? updatedList[0].id : 1);
     }
 
     setShowDeleteConfirm(false);
@@ -688,7 +713,12 @@ const Rides = () => {
                 {filteredRides.length === 0 ? (
                   <div className="no-rides-empty-box">
                     <p>No se encontraron rodadas con los filtros seleccionados.</p>
-                    <button className="btn-reset" onClick={handleResetFilters}>Restablecer Filtros</button>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                      <button className="btn-reset" onClick={handleResetFilters}>Restablecer Filtros</button>
+                      <button className="btn-reset" onClick={handleRestoreDefaultRides} style={{ background: 'rgba(255,186,0,0.2)', color: '#ffba00' }}>
+                        Restaurar Rodadas
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   filteredRides.map((ride, idx) => (
