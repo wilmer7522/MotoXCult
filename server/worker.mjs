@@ -580,7 +580,7 @@ export default {
           clubs = await db.prepare(
             `SELECT c.*, u.name as leaderName, u.email as leaderEmail 
              FROM Club c 
-             JOIN User u ON c.leaderId = u.id 
+             LEFT JOIN User u ON c.leaderId = u.id 
              WHERE c.paymentStatus IN ('APPROVED', 'GRACE_PERIOD')
                 OR (c.paymentStatus = 'EXPIRED' AND c.subscriptionExpiresAt >= ?)
                 OR (c.leaderId = ?)
@@ -590,7 +590,7 @@ export default {
           clubs = await db.prepare(
             `SELECT c.*, u.name as leaderName, u.email as leaderEmail 
              FROM Club c 
-             JOIN User u ON c.leaderId = u.id 
+             LEFT JOIN User u ON c.leaderId = u.id 
              WHERE c.paymentStatus IN ('APPROVED', 'GRACE_PERIOD')
                 OR (c.paymentStatus = 'EXPIRED' AND c.subscriptionExpiresAt >= ?)
              ORDER BY c.createdAt DESC`

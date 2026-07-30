@@ -41,9 +41,34 @@ const Clubs = () => {
 
   const fetchClubs = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/clubs`);
-      const data = await res.json();
-      if (res.ok) {
+      const clubEndpoints = [
+        `${API_URL}/api/clubs`,
+        `https://motoxcult-api.wilmer7522.workers.dev/api/clubs`
+      ];
+
+      const token = localStorage.getItem('token');
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+      let data = null;
+      let resOk = false;
+
+      for (const endpoint of clubEndpoints) {
+        try {
+          const res = await fetch(endpoint, { headers });
+          const contentType = res.headers.get('content-type') || '';
+          if (res.ok && contentType.includes('application/json')) {
+            data = await res.json();
+            if (Array.isArray(data)) {
+              resOk = true;
+              break;
+            }
+          }
+        } catch(e) {
+          console.warn('Club list fetch retry:', endpoint, e);
+        }
+      }
+
+      if (resOk && Array.isArray(data)) {
         setClubs(data);
       }
     } catch (err) {
