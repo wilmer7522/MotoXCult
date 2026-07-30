@@ -195,19 +195,23 @@ export default {
 
         const token = jwt.sign({ id: user.id, email: user.email, role: user.role || 'ADMIN' }, env.JWT_SECRET || JWT_SECRET, { expiresIn: '7d' });
 
+        const isAdmin = user.email.toLowerCase() === 'wilmer7522@gmail.com' || user.role === 'ADMIN';
+        const userRole = isAdmin ? 'ADMIN' : 'USER';
+        const userClub = isAdmin ? "GAIA'S BIKERS" : (user.club || null);
         const gentlemanAvatar = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=300';
+
         const fullUserObj = {
           ...user,
           name: user.name && user.name.includes('@') ? 'Wilmer Rojas' : (user.name || 'Wilmer Rojas'),
           avatar: user.avatar || gentlemanAvatar,
-          role: 'ADMIN',
-          club: 'Moto Club Cúcuta High Speed',
+          role: userRole,
+          club: userClub,
           city: 'Cúcuta',
           country: 'Colombia',
-          karma: 1500,
-          isSubscriptionActive: 1,
-          selectedPlan: 'annual',
-          subscriptionExpiresAt: '2027-12-31T23:59:59.000Z',
+          karma: isAdmin ? 1500 : 100,
+          isSubscriptionActive: isAdmin ? 1 : 0,
+          selectedPlan: isAdmin ? 'annual' : null,
+          subscriptionExpiresAt: isAdmin ? '2027-12-31T23:59:59.000Z' : null,
           bikes: (bikes.results && bikes.results.length > 0) ? bikes.results : [
             { id: 1, brand: 'AKT', model: 'TT DS 200', year: 2023, nickname: 'VALIENTE', plate: 'PWL08F', image: '/assets/garage-bg.jpg' },
             { id: 2, brand: 'BMW', model: 'R1250GS', year: 2023, nickname: 'La Bestia', image: '/assets/garage-bg.jpg' },
