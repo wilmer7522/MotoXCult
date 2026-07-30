@@ -195,17 +195,23 @@ export default {
 
         const token = jwt.sign({ id: user.id, email: user.email, role: user.role || 'ADMIN' }, env.JWT_SECRET || JWT_SECRET, { expiresIn: '7d' });
 
-        delete user.password;
+        const gentlemanAvatar = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=300';
         const fullUserObj = {
           ...user,
-          role: user.role || 'ADMIN',
-          club: user.club || 'Moto Club Cúcuta High Speed',
+          name: user.name && user.name.includes('@') ? 'Wilmer Rojas' : (user.name || 'Wilmer Rojas'),
+          avatar: user.avatar || gentlemanAvatar,
+          role: 'ADMIN',
+          club: 'Moto Club Cúcuta High Speed',
+          city: 'Cúcuta',
+          country: 'Colombia',
+          karma: 1500,
           isSubscriptionActive: 1,
           selectedPlan: 'annual',
           subscriptionExpiresAt: '2027-12-31T23:59:59.000Z',
           bikes: (bikes.results && bikes.results.length > 0) ? bikes.results : [
-            { id: 1, brand: 'BMW', model: 'R1250GS', year: 2023, nickname: 'La Bestia', image: '/assets/garage-bg.jpg' },
-            { id: 2, brand: 'Harley Davidson', model: 'Iron 883', year: 2018, nickname: 'La Negra', image: '/assets/ride-map.jpg' }
+            { id: 1, brand: 'AKT', model: 'TT DS 200', year: 2023, nickname: 'VALIENTE', plate: 'PWL08F', image: '/assets/garage-bg.jpg' },
+            { id: 2, brand: 'BMW', model: 'R1250GS', year: 2023, nickname: 'La Bestia', image: '/assets/garage-bg.jpg' },
+            { id: 3, brand: 'Harley Davidson', model: 'Iron 883', year: 2018, nickname: 'La Negra', image: '/assets/ride-map.jpg' }
           ]
         };
 
@@ -586,7 +592,26 @@ export default {
           ).bind(thirtyDaysAgoIso).all();
         }
 
-        return new Response(JSON.stringify(clubs.results || []), { headers: corsHeaders });
+        const resultsList = (clubs && clubs.results && clubs.results.length > 0) ? clubs.results : [
+          {
+            id: 1,
+            name: "GAIA'S BIKERS",
+            city: "Cúa",
+            country: "Venezuela",
+            leaderName: "Wilmer Rojas",
+            leaderEmail: "wilmer7522@gmail.com",
+            createdAt: "22/07/2026",
+            subscriptionExpiresAt: "2026-08-20T23:59:59.000Z",
+            isSubscriptionActive: 1,
+            paymentStatus: "APPROVED",
+            daysRemaining: 21,
+            logo: "/assets/garage-bg.jpg",
+            coverImage: "/assets/garage-bg.jpg",
+            description: "Moto Club oficial registrado en la comunidad MotoXCult."
+          }
+        ];
+
+        return new Response(JSON.stringify(resultsList), { headers: corsHeaders });
       }
 
       // Clubs: Get Details (/api/clubs/:id)
@@ -1134,31 +1159,37 @@ export default {
         const results = (subscriptions.results && subscriptions.results.length > 0) ? subscriptions.results : [
           {
             id: 1,
-            name: 'Moto Club Cúcuta High Speed',
+            name: "GAIA'S BIKERS",
             leaderName: 'Wilmer Rojas',
             leaderEmail: 'wilmer7522@gmail.com',
-            leaderPhone: '+57 300 123 4567',
-            city: 'Cúcuta',
-            country: 'Colombia',
-            selectedPlan: 'annual',
-            paymentReference: 'NEQUI-98471203',
+            leaderPhone: '+58 412 123 4567',
+            city: 'Cúa',
+            country: 'Venezuela',
+            selectedPlan: 'monthly',
+            paymentReference: '—',
             isSubscriptionActive: 1,
             paymentStatus: 'APPROVED',
-            subscriptionExpiresAt: '2027-12-31T23:59:59.000Z'
+            subscriptionExpiresAt: '2026-08-20T23:59:59.000Z'
           },
           {
             id: 2,
-            name: 'Los Halcones del Norte',
-            leaderName: 'Carlos R.',
-            leaderEmail: 'carlos@motoxcult.com',
-            leaderPhone: '+57 310 987 6543',
-            city: 'Medellín',
-            country: 'Colombia',
-            selectedPlan: 'monthly',
-            paymentReference: 'BREB-45210938',
-            isSubscriptionActive: 1,
-            paymentStatus: 'APPROVED',
-            subscriptionExpiresAt: '2026-11-30T23:59:59.000Z'
+            name: 'crtyer',
+            leaderName: 'Wilmer Rojas',
+            leaderEmail: 'wilmer7522@gmail.com',
+            paymentReference: 'NEQUI: 1234',
+            rejectionReason: 'el pago no se registro, vuelve a realizar el pago',
+            isSubscriptionActive: 0,
+            paymentStatus: 'REJECTED'
+          },
+          {
+            id: 3,
+            name: 'otra',
+            leaderName: 'Wilmer Rojas',
+            leaderEmail: 'wilmer7522@gmail.com',
+            paymentReference: 'PAYPAL: 1234',
+            rejectionReason: 'Comprobante no válido o no se pudo verificar la transacción.',
+            isSubscriptionActive: 0,
+            paymentStatus: 'REJECTED'
           }
         ];
 
