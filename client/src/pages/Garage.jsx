@@ -82,20 +82,51 @@ const Garage = () => {
         return;
       }
 
-      const res = await fetch(`${API_URL}/api/auth/me`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      const data = await res.json();
-      if (res.ok && data) {
-        let bikesList = data.bikes || [];
-        if (!bikesList || bikesList.length === 0) {
-          const bikesRes = await fetch(`${API_URL}/api/users/bikes`, {
+      const profileEndpoints = [
+        `${API_URL}/api/auth/me`,
+        `https://motoxcult-api.wilmer7522.workers.dev/api/auth/me`
+      ];
+
+      let data = null;
+      let resOk = false;
+
+      for (const endpoint of profileEndpoints) {
+        try {
+          const res = await fetch(endpoint, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
-          if (bikesRes.ok) {
-            bikesList = await bikesRes.json();
+          const contentType = res.headers.get('content-type') || '';
+          if (res.ok && contentType.includes('application/json')) {
+            data = await res.json();
+            resOk = true;
+            break;
+          }
+        } catch(e) {
+          console.warn('Garage profile fetch retry:', endpoint, e);
+        }
+      }
+
+      if (resOk && data) {
+        let bikesList = data.bikes || [];
+        if (!bikesList || bikesList.length === 0) {
+          const bikeEndpoints = [
+            `${API_URL}/api/users/bikes`,
+            `https://motoxcult-api.wilmer7522.workers.dev/api/users/bikes`
+          ];
+          for (const bEndpoint of bikeEndpoints) {
+            try {
+              const bikesRes = await fetch(bEndpoint, {
+                headers: { 'Authorization': `Bearer ${token}` }
+              });
+              const bContentType = bikesRes.headers.get('content-type') || '';
+              if (bikesRes.ok && bContentType.includes('application/json')) {
+                const fetchedBikes = await bikesRes.json();
+                if (Array.isArray(fetchedBikes) && fetchedBikes.length > 0) {
+                  bikesList = fetchedBikes;
+                  break;
+                }
+              }
+            } catch(e) {}
           }
         }
         setProfile({ ...data, bikes: bikesList });

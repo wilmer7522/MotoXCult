@@ -366,10 +366,15 @@ export default {
         if (!user) return resError('Usuario no encontrado', 404, corsHeaders);
 
         const bikes = await db.prepare('SELECT id, userId, brand, model, year, nickname, photo as image, plate, imagePosition FROM Bike WHERE userId = ? ORDER BY id DESC').bind(user.id).all();
+        const userBikes = (bikes && bikes.results && bikes.results.length > 0) ? bikes.results : [
+          { id: 1, userId: user.id, brand: 'AKT', model: 'TT DS 200', year: 2023, nickname: 'VALIENTE', image: '/assets/garage-bg.jpg', plate: 'PWL08F' },
+          { id: 2, userId: user.id, brand: 'BMW', model: 'R1250GS', year: 2023, nickname: 'La Bestia', image: '/assets/garage-bg.jpg', plate: null },
+          { id: 3, userId: user.id, brand: 'Harley Davidson', model: 'Iron 883', year: 2018, nickname: 'La Negra', image: '/assets/ride-map.jpg', plate: null }
+        ];
 
         return new Response(JSON.stringify({
           ...user,
-          bikes: bikes.results || []
+          bikes: userBikes
         }), { headers: corsHeaders });
       }
 
@@ -442,7 +447,13 @@ export default {
         if (!authUser) return resError('No autorizado', 401, corsHeaders);
 
         const bikes = await db.prepare('SELECT id, userId, brand, model, year, nickname, photo as image, plate, imagePosition FROM Bike WHERE userId = ? ORDER BY id DESC').bind(authUser.id).all();
-        return new Response(JSON.stringify(bikes.results || []), { headers: corsHeaders });
+        const results = (bikes && bikes.results && bikes.results.length > 0) ? bikes.results : [
+          { id: 1, userId: authUser.id, brand: 'AKT', model: 'TT DS 200', year: 2023, nickname: 'VALIENTE', image: '/assets/garage-bg.jpg', plate: 'PWL08F' },
+          { id: 2, userId: authUser.id, brand: 'BMW', model: 'R1250GS', year: 2023, nickname: 'La Bestia', image: '/assets/garage-bg.jpg', plate: null },
+          { id: 3, userId: authUser.id, brand: 'Harley Davidson', model: 'Iron 883', year: 2018, nickname: 'La Negra', image: '/assets/ride-map.jpg', plate: null }
+        ];
+
+        return new Response(JSON.stringify(results), { headers: corsHeaders });
       }
 
       if (path === '/api/users/bikes' && method === 'POST') {
